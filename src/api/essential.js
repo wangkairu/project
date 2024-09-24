@@ -16,7 +16,7 @@ export function exportBaseGoods(params) {
         data: params,
         responseType: 'blob',
         // headers: {
-        //     'Content-Type': 'application/json'
+        //     'Content-Type': 'APPLICATION/OCTET-STREAM'
         // }
     })
 }
@@ -32,5 +32,36 @@ export function warehousingGoods(params) {
     })
 }
 
+// 
+export function setHeight(params){
+    return request({
+        url:"/wms/baseGoods/setHeight",
+        method:"post",
+        data:params
+    })
+}
 
 
+export function deleteRole(id) {
+    return request({
+        url: `/wms/basWarehouseVirtually/delete/${id}`,
+        method: "get",
+    })
+}
+
+// 
+export function editRemark(params){
+    return request({
+        url:"/wms/baseGoods/editRemark",
+        method:"post",
+        data:params
+    })
+}
+
+// 补全信息
+export function dataComplete(id){
+    return request({
+        url:`/wms/baseGoods/dataComplete/${id}`,
+        method:"get",
+    })
+}

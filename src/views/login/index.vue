@@ -20,7 +20,6 @@
           <el-input
             type="password"
             v-model="ruleForm.passWord"
-            autocomplete="off"
             placeholder="请输入密码"
           >
             <svg-icon slot="prefix" icon-class="password" />
@@ -52,7 +51,6 @@ export default {
       }
       callback();
     };
-
     var validatePass = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入密码"));
@@ -63,7 +61,6 @@ export default {
         callback();
       }
     };
-
     return {
       ruleForm: {
         loginName: "",
@@ -96,12 +93,10 @@ export default {
         this.submitForm("ruleForm");
       }
     },
-
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          sessionStorage.setItem("ruleForm", JSON.stringify(this.ruleForm));
-          this.$store.dispatch("user/submit", this.ruleForm).then(() => {
+          this.$store.dispatch("user/submit", this.ruleForm).then((res) => {
             this.$router.push({ path: "/" });
           });
         } else {
@@ -135,7 +130,6 @@ export default {
 .item {
   margin-bottom: 18px;
 }
-
 .clearfix:before,
 .clearfix:after {
   display: table;
@@ -144,10 +138,9 @@ export default {
 .clearfix:after {
   clear: both;
 }
-
 .box-card {
-  width: 400px;
-  height: 300px;
+  width: 30rem;
+  height: 20rem;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -157,7 +150,7 @@ export default {
   border: none;
   .title {
     font-weight: 600;
-    font-size: 20px;
+    font-size: 1.2rem;
     color: #fff;
   }
 }
@@ -169,10 +162,27 @@ export default {
 .el-card {
   background: rgba(255, 255, 255, 0.3);
 }
+::v-deep .el-card__body,
+.el-main {
+  padding: 1.25rem;
+  margin-top: 10px;
+}
+::v-deep .el-input__inner {
+  height: 3rem;
+  line-height: 3rem;
+}
+::v-deep .el-color-picker__icon,
+.el-input,
+.el-textarea {
+  margin-top: 4px;
+}
+::v-deep .el-input__prefix {
+  top: 0.275rem;
+}
 .el-button {
-  width: 360px;
-
-  //   height: 60px;
-  padding: 10px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 1rem 0;
+  border-radius: none;
 }
 </style>

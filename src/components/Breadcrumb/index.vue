@@ -1,16 +1,17 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
-      <el-breadcrumb-item
-        v-for="(item, index) in breadList"
-        :key="index"
-        :to="{ path: item.path }"
-        >{{ item.meta.title }}</el-breadcrumb-item
-      >
-    </el-breadcrumb>
+    <div >
+      <el-breadcrumb separator="/">
+          <el-breadcrumb-item
+            v-for="(item, index) in breadList" 
+            :key="index"
+            :to="{ path: item.path }"
+            >{{ item.meta.title }}</el-breadcrumb-item
+          >
+      </el-breadcrumb>
+    </div>
   </div>
 </template>
-
 
 <script>
 export default {

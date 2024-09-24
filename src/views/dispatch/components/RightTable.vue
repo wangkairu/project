@@ -18,7 +18,11 @@
       <el-table-column property="mesBoxNo" label="MES箱号"> </el-table-column>
       <el-table-column property="mesProductionNo" label="MES生产编号">
       </el-table-column>
-      <el-table-column property="mesCustomerName" label="MES客户全称">
+      <el-table-column
+        property="mesCustomerName"
+        label="MES客户全称"
+        :show-overflow-tooltip="true"
+      >
       </el-table-column>
       <el-table-column property="mesCustomerShortName" label="MES客户简称">
       </el-table-column>
@@ -67,10 +71,10 @@
 <script>
 export default {
   name: "rightTable",
-  props: {
+  props:{
     selectData: {
       type: Array,
-    }
+    },
   },
   data() {
     return {
@@ -84,7 +88,7 @@ export default {
         right.push(v.idStr)
       })
       this.rightList = [...new Set(right)]
-      this.$emit('handleChangeRightdetailselect',this.rightList)
+      this.$emit('handleChangeRightdetailselect', this.rightList)
 
       // localStorage.setItem('rightList', JSON.stringify(this.rightList))
     },

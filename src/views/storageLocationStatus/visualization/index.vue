@@ -10,7 +10,7 @@
       }}</el-radio-button>
     </el-radio-group>
     <div class="table-filter">
-      <totalStore></totalStore>
+      <!-- <totalStore></totalStore> -->
       <!-- <wStore></wStore> -->
     </div>
   </div>
@@ -19,10 +19,11 @@
 <script>
 import eStore from "./components/eastStore.vue";
 import wStore from "./components/westStore.vue";
-import totalStore from "./components/totalStore.vue";
+// import totalStore from "./components/totalStore.vue";
 export default {
   name: "store",
-  components: { eStore, wStore, totalStore },
+  // totalStore
+  components: { eStore, wStore, },
   data() {
     return {
       activeName: "总体分布图",
@@ -42,7 +43,7 @@ export default {
       ],
     };
   },
-  mounted() {},
+  mounted() { },
   methods: {
     handelChangeLocation(val) {
       this.activeName = val;

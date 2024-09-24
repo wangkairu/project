@@ -1,0 +1,40 @@
+*{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+html,body,#app{
+    height: 100%;
+}
+
+a{
+    text-decoration:none
+}
+
+/* Chrome 滚动条优化 */
+
+// div {
+//   &::-webkit-scrollbar {
+//     /*滚动条整体样式*/
+//     width: 8px; /*高宽分别对应横竖滚动条的尺寸*/
+//     height: 8px;
+//   }
+
+//   &::-webkit-scrollbar-thumb {
+//     /*滚动条里面小方块*/
+//     border-radius: 8px;
+//     background-color: hsla(220, 4%, 58%, 0.3);
+//     transition: background-color 0.3s;
+
+//     &:hover {
+//       background: #bbb;
+//     }
+//   }
+
+//   &::-webkit-scrollbar-track {
+//     /*滚动条里面轨道*/
+//     background: #ededed;
+//   }
+// }
+  

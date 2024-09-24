@@ -3,9 +3,8 @@
     <el-form
       :rules="rules"
       ref="ruleForm"
-      label-width="100px"
+      label-width="110px"
       class="demo-ruleForm"
-      size="mini"
     >
       <el-form-item label="空闲备货区" prop="stockingAreaCode">
         <el-select

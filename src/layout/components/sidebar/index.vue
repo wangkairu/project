@@ -33,14 +33,14 @@ export default {
       return global.antRouter;
     },
   },
-  mounted() {},
+  mounted() { },
 };
 </script>
 
 <style scoped>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
-  /* min-height: 400px; */
+  width: 240px;
+  min-height: 400px;
 }
 
 .el-menu {

@@ -5,7 +5,6 @@
       :current-page.sync="currentPage"
       :page-size.sync="pageSize"
       :layout="layout"
-      hide-on-single-page
       :page-sizes="pageSizes"
       :total="total"
       v-bind="$attrs"
@@ -74,6 +73,8 @@ export default {
       },
     },
   },
+  mounted(){
+  },
   methods: {
     handleSizeChange(val) {
       this.$emit("pagination", { page: this.currentPage, limit: val });
@@ -95,7 +96,7 @@ export default {
 
 <style scoped>
 .pagination-container {
-  padding: 16px 0;
+  padding: 4px 0;
   display: flex;
   justify-content: flex-end;
 }

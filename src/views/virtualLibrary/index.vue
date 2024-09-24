@@ -3,12 +3,28 @@
     <div class="warpper-left">
       <div class="table-filter">
         <SearchFilter
-          :labelWidth="'135px'"
-          :maxShow="4"
+          :labelWidth="'200px'"
+          :maxShow="3"
           :collapsiable="false"
           @search="search"
           @reset="reset"
         >
+        <el-form-item label="库房编号">
+          <el-select
+            clearable
+            size="mini"
+            v-model="sourceFrom"
+            placeholder="请选择库房"
+            @change="warehouseCodeChanged"
+          >
+            <el-option
+              v-for="item in warehouseCodeOptions"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key"
+            />
+          </el-select>
+        </el-form-item>
           <el-form-item label="MES客户简码">
             <el-input
               size="mini"
@@ -100,7 +116,8 @@
           <el-form-item label="MES规格名称">
             <el-input
               size="mini"
-              v-model="mesNormsNo"
+              clearable
+              v-model="mesNormsName"
               placeholder="请输入MES规格名称"
               @change="handelMesNormsNo"
             ></el-input>
@@ -233,7 +250,7 @@
             @click="handelExport"
             size="mini"
             >导出Excel</el-button
-          >
+          >   
           <el-popover placement="right" width="500" trigger="click">
             <el-checkbox-group v-model="checkedTableColumns">
               <el-row>
@@ -244,7 +261,6 @@
                 </el-col>
               </el-row>
             </el-checkbox-group>
-
             <el-button
               style="margin-left: 10px"
               type="primary"
@@ -267,21 +283,100 @@
           </el-popover>
         </div>
         <el-table
-          v-loading="loading"
-          height="700"
-          border
+          :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
           style="width: 100%"
           :data="tableData"
         >
+          <el-table-column fixed type="index" label="#"> </el-table-column>
+          <el-table-column  fixed  label="操作">
+            <template slot-scope="scope">
+              <el-button v-show="scope.row.wmsStatusName === '已入库'" type="text" size="size" @click="handelDelete(scope.row)">删除</el-button>
+              <el-button v-show="scope.row.needDataComplete" type="text" size="size" @click="handelComplation(scope.row)">数据补全</el-button>
+            </template>
+          </el-table-column>
           <template v-for="(col, index) in bindTableColumns">
-            <el-table-column
-              :fixed="col.fixed || false"
-              :key="index"
-              :prop="col.attr"
-              :label="col.label"
-              :width="col.width || '100'"
-            >
-            </el-table-column>
+            <template v-if="col.label === 'WMS状态'">
+              <el-table-column
+                :fixed="col.fixed || false"
+                :key="index"
+                :prop="col.attr"
+                :label="col.label"
+                :width="col.width || '100'"
+              >
+                <template slot-scope="scope">
+                  <span>
+                    <el-tag
+                      v-if="scope.row.wmsStatusName === '已入库'"
+                      type="success"
+                      >{{ scope.row.wmsStatusName }}</el-tag
+                    >
+                    <el-tag v-else type="danger">{{
+                      scope.row.wmsStatusName
+                    }}</el-tag>
+                  </span>
+                </template>
+              </el-table-column>
+            </template>
+            <template v-else-if="col.label === 'AGV车辆'">
+              <el-table-column
+                :fixed="col.fixed || false"
+                :key="index"
+                :prop="col.attr"
+                :label="col.label"
+                :width="col.width || '100'"
+              >
+                <template slot-scope="scope">
+                  <span>
+                    {{ scope.row.agvNo?scope.row.agvNo:'暂无车辆' }}
+                  </span>
+                </template>
+              </el-table-column>
+            </template>
+            <template v-else-if="col.label === 'AGV任务编号'">
+              <el-table-column
+                :fixed="col.fixed || false"
+                :key="index"
+                :prop="col.attr"
+                :label="col.label"
+                :width="col.width || '100'"
+              >
+                <template slot-scope="scope">
+                  <span>
+                    {{ scope.row.agvTaskNo?scope.row.agvTaskNo:'暂无' }}
+                  </span>
+                </template>
+              </el-table-column>
+            </template>
+            <template v-else-if="col.label =='高度'">
+              <el-table-column
+                :fixed="col.fixed || false"
+                :key="index"
+                :prop="col.attr"
+                :label="col.label"
+                :width="col.width || '100'"
+              >
+                <template slot-scope="scope">
+                  <input type="text" v-model="scope.row.height" placeholder="请输入高度" style="width: 90px;height: 26px;border: 2px solid #ccc;outline-color:#409EFF;outline-width : 1px;padding: 0 20px;border-radius: 5px;" @change="handelChangeHeight($event,scope.row)"/>
+                  <!-- <el-input
+                      size="mini"
+                      v-model="scope.row.height"
+                      @change="handelChangeHeight"
+                      placeholder="请输入高度"
+                    ></el-input> -->
+                </template>
+              </el-table-column>
+            </template>
+            <template v-else>
+              <el-table-column
+                :fixed="col.fixed || false"
+                :key="index"
+                :prop="col.attr"
+                :label="col.label"
+                :width="col.width || '100'"
+                :show-overflow-tooltip="col.tooltip || false"
+              >
+              </el-table-column>
+            </template>
           </template>
         </el-table>
       </div>
@@ -299,8 +394,11 @@
 </template>
 
 <script>
+import {
+  queryWarehouseColDropDown,
+} from "@/api/location";
 import PageNation from "@/components/Pagination";
-import { queryGoodsList, exportBaseGoods } from "@/api/essential";
+import { queryGoodsList, exportBaseGoods,setHeight,deleteRole ,dataComplete} from "@/api/essential";
 import { uploadExcel } from "@/utils/uploadExcel";
 import SearchFilter from "@/components/SearchFilter";
 import moment from "moment";
@@ -313,9 +411,37 @@ export default {
       form: {},
       columns: [
         {
+          label:"库房",
+          attr:"warehouseEnum",
+          width:"90",
+          show: true,
+          fixed: true,
+        },
+        {
           label: "WMS状态",
-          attr: "wmsStatus",
-          width: "100",
+          attr: "wmsStatusName",
+          width: "110",
+          show: true,
+          fixed: true,
+        },
+        {
+          label: "AGV车辆",
+          attr: "agvNo",
+          width: "110",
+          show: true,
+          fixed: true,
+        },
+        {
+          label: "AGV任务编号",
+          attr: "agvTaskNo",
+          width: "210",
+          show: true,
+          fixed: true,
+        },
+        {
+          label: "周数",
+          attr: "weeks",
+          width: "90",
           show: true,
           fixed: true,
         },
@@ -329,7 +455,7 @@ export default {
         {
           label: "MES规格代码",
           attr: "mesNormsNo",
-          width: "60",
+          width: "80",
           show: true,
           fixed: true,
         },
@@ -345,6 +471,7 @@ export default {
           attr: "mesCustomerShortName",
           width: "150",
           show: true,
+          tooltip: true
         },
         {
           label: "MES轮型",
@@ -355,7 +482,7 @@ export default {
         {
           label: "MES托盘",
           attr: "mesTray",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
@@ -366,20 +493,20 @@ export default {
         },
         {
           label: "MES左右面",
-          attr: "mesLeftRightSides",
-          width: "60",
+          attr: "mesLeftRightSidesName",
+          width: "70",
           show: true,
         },
         {
           label: "MES有无焊点",
           attr: "mesIsSolderJoint",
-          width: "60",
+          width: "70",
           show: true,
         },
         {
           label: "MES轮数",
           attr: "mesNumOfRounds",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
@@ -387,17 +514,18 @@ export default {
           attr: "mesSpecialRequirements",
           width: "200",
           show: true,
+          tooltip: true
         },
         {
           label: "MES箱号二维码",
           attr: "mesBoxNumberQrCode",
-          width: "180",
+          width: "200",
           show: true,
         },
         {
           label: "MES生产编号",
           attr: "mesProductionNo",
-          width: "200",
+          width: "220",
           show: true,
         },
         {
@@ -409,7 +537,7 @@ export default {
         {
           label: "WMS客户简码",
           attr: "wmsCustomerSimpleCode",
-          width: "100",
+          width: "115",
           show: true,
         },
         {
@@ -417,12 +545,14 @@ export default {
           attr: "mesCustomerName",
           width: "400",
           show: true,
+          tooltip: true
         },
         {
           label: "MES帘线结构",
           attr: "mesCordStructure",
-          width: "150",
+          width: "180",
           show: true,
+          tooltip: true
         },
         {
           label: "MES毛重",
@@ -445,7 +575,7 @@ export default {
         {
           label: "MES样品",
           attr: "mesIsSample",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
@@ -469,7 +599,7 @@ export default {
         {
           label: "WMS发货类型",
           attr: "wmsDeliverType",
-          width: "100",
+          width: "115",
           show: true,
         },
         {
@@ -487,87 +617,89 @@ export default {
         {
           label: "MES箱焊点轮数",
           attr: "mesBoxWeldingPointsNum",
-          width: "60",
+          width: "90",
           show: true,
         },
         {
           label: "MES冻结",
           attr: "mesIsFreeze",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
           label: "MES发货冻结",
           attr: "mesIsDeliveryFreeze",
-          width: "60",
+          width: "110",
           show: true,
         },
         {
           label: "WMS时效到达时间",
           attr: "wmsAgeingTime",
-          width: "180",
+          width: "100",
           show: true,
         },
         {
           label: "MES时效",
           attr: "mesAgeing",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
           label: "WMS时效是否到达",
           attr: "wmsIsAgeing",
-          width: "60",
+          width: "100",
           show: true,
         },
         {
           label: "MES焊点",
           attr: "mesSolderJoint",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
           label: "MES工艺",
           attr: "mesTechnology",
-          width: "60",
+          width: "80",
           show: true,
+          tooltip: true
         },
         {
           label: "MES配箱值",
           attr: "mesDistributionValue",
-          width: "60",
+          width: "100",
           show: true,
         },
         {
           label: "MES起鼓",
           attr: "mesBulging",
-          width: "60",
+          width: "80",
           show: true,
         },
         {
           label: "WMS从MES获取信息时间",
           attr: "wmsGetInfoFromMesTime",
-          width: "180",
+          width: "190",
           show: true,
         },
         {
           label: "AGV任务状态",
           attr: "agvTaskStatus",
-          width: "100",
+          width: "110",
           show: true,
         },
         {
           label: "WMS任务类别",
           attr: "wmsTaskType",
-          width: "100",
+          width: "120",
           show: true,
         },
-        {
-          label: "AGV任务编号",
-          attr: "agvTaskNo",
-          width: "100",
-          show: true,
-        },
+        // {
+        //   label: "AGV任务编号",
+        //   attr: "agvTaskNo",
+        //   width: "110",
+        //   show: true,
+        //   tooltip: true
+        // },
         {
           label: "AGV编号",
           attr: "agvNo",
@@ -577,37 +709,37 @@ export default {
         {
           label: "WMS起点库位编号",
           attr: "wmsStartWarehouseCode",
-          width: "120",
+          width: "150",
           show: true,
         },
         {
           label: "WMS终点库位编号",
           attr: "wmsEndWarehouseCode",
-          width: "120",
+          width: "150",
           show: true,
         },
         {
           label: "WMS终点库列编号",
           attr: "wmsEndWarehouseColCode",
-          width: "120",
+          width: "150",
           show: true,
         },
         {
           label: "WMS终点库区名称",
           attr: "wmsEndWarehouseAreaName",
-          width: "100",
+          width: "150",
           show: true,
         },
         {
           label: "WMS调拨前库位编号",
           attr: "wmsBeforeAllocateTransferWarehouseCode",
-          width: "120",
+          width: "160",
           show: true,
         },
         {
           label: "WMS任务发布人",
           attr: "wmsTaskPublisher",
-          width: "100",
+          width: "130",
           show: true,
         },
         {
@@ -625,16 +757,24 @@ export default {
         {
           label: "WMS返工原因",
           attr: "wmsReworkReason",
-          // width: "120",
+          width: "120",
           show: true,
         },
         {
           label: "WMS返库原因",
           attr: "wmsReturnWarehouseReason",
-          // width: "120",
+          width: "120",
+          show: true,
+        },
+        {
+          label: "高度",
+          attr: "height",
+          width: "170",
           show: true,
         },
       ],
+      warehouseCodeOptions:[],
+      sourceFrom:"",
       customerSimpleCode: "",
       mesBoxNumberQrCode: "",
       mesBoxWeldingPointsNum: "",
@@ -646,7 +786,7 @@ export default {
       mesIsSolderJoint: "",
       mesLeftRightSides: "",
       mesMeterLength: "",
-      mesNormsNo: "",
+      mesNormsName: "",
       mesNumOfRounds: "",
       mesPackingTimeEnd: "",
       mesPackingTimeStart: "",
@@ -662,13 +802,15 @@ export default {
       total: 0,
       listQuery: {
         pageNum: 1,
-        pageSize: 15,
+        pageSize: 10,
       },
       loading: true,
+      height:"",
     };
   },
   mounted() {
     this.queryGoodsList();
+    this.getProjectList()
   },
   computed: {
     bindTableColumns() {
@@ -679,7 +821,7 @@ export default {
         return this.bindTableColumns.map((column) => column.attr);
       },
       set(checked) {
-        this.columns.forEach((column) => {
+        this.columns&&this.columns.length>0&&this.columns.forEach((column) => {
           if (checked.includes(column.attr)) {
             column.show = true;
           } else {
@@ -690,6 +832,46 @@ export default {
     },
   },
   methods: {
+    async handelComplation(row){
+      const res = await dataComplete(row.id)
+      if(res.code==0){
+        this.queryGoodsList();
+      }else{
+        this.$message.error(res.msg)
+      }
+    },
+    async getProjectList() {
+      const params = {};
+      const res = await queryWarehouseColDropDown(params);
+      if (res.code === "0") {
+        this.warehouseCodeOptions = res.data;
+      }
+    },
+    warehouseCodeChanged(val){
+      if(val){
+        this.form.sourceFrom=val
+        this.queryGoodsList();
+      }
+    },
+    async handelDelete(row){
+      const res = await deleteRole(row.id)
+      if(res.code=='0'){
+        this.queryGoodsList();
+      }else{
+        this.$message.error(res.msg)
+      }
+    },
+    async handelChangeHeight(val,row){
+      const params={
+        id:row.id,
+        height:val.target.value
+      }
+      const res = await setHeight(params)
+      if(res.code==='0'){
+        this.queryGoodsList();
+        this.$message.success(res.msg)
+      }
+    },
     async queryGoodsList() {
       const params = {
         request: this.form,
@@ -700,7 +882,17 @@ export default {
       if (res.code === "0") {
         this.tableData = Object.freeze(res.data.items);
         this.total = res.data.total;
-        this.loading = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     pageChange(val) {
@@ -713,6 +905,7 @@ export default {
     },
     reset() {
       this.form = {};
+      this.sourceFrom=""
       this.customerSimpleCode = "";
       this.mesBoxNumberQrCode = "";
       this.mesBoxWeldingPointsNum = "";
@@ -724,7 +917,7 @@ export default {
       this.mesIsSolderJoint = "";
       this.mesLeftRightSides = "";
       this.mesMeterLength = "";
-      this.mesNormsNo = "";
+      this.mesNormsName = "";
       this.mesNumOfRounds = "";
       this.mesPackingTimeEnd = "";
       this.mesPackingTimeStart = "";
@@ -784,8 +977,10 @@ export default {
       this.queryGoodsList();
     },
     handelMesNormsNo(val) {
-      this.form.mesNormsNo = val;
-      this.queryGoodsList();
+      if(val){
+        this.form.mesNormsName = val;
+        this.queryGoodsList();
+      }
     },
     handelMesNumOfRounds(val) {
       this.form.mesNumOfRounds = val;
@@ -816,11 +1011,11 @@ export default {
       this.queryGoodsList();
     },
     handelMesDeliveryTimeEnd(val) {
-      var date = moment(val).valueOf();
+      this.form.mesDeliveryTimeEnd= moment(val).valueOf();
       this.queryGoodsList();
     },
     handelMesPackingTimeEnd(val) {
-      this.form.mesPackingTimeEnd = val;
+      this.form.mesPackingTimeEnd = moment(val).valueOf();
       this.queryGoodsList();
     },
     handelMesPackingTimeStart(val) {
@@ -828,23 +1023,23 @@ export default {
       this.queryGoodsList();
     },
     handelMesWarehousingTimeEnd(val) {
-      this.form.mesWarehousingTimeEnd = val;
+      this.form.mesWarehousingTimeEnd = moment(val).valueOf();
       this.queryGoodsList();
     },
     handelMesWarehousingTimeStart(val) {
-      this.form.mesWarehousingTimeStart = val;
+      this.form.mesWarehousingTimeStart = moment(val).valueOf();
       this.queryGoodsList();
     },
     handelExport() {
-      const arr = [];
+      let params={
+        titleNameList:[],
+        ...this.form
+      }
       this.bindTableColumns &&
         this.bindTableColumns.length > 0 &&
         this.bindTableColumns.forEach((v) => {
-          arr.push(v.attr);
+          params.titleNameList.push(v.attr)
         });
-      const params = {
-        titleNameList: arr,
-      };
       exportBaseGoods(params).then((res) => {
         const blob = new Blob([res], { type: "application/vnd.ms-excel" });
         const fileName = "成品箱虚拟库.xlsx";
@@ -860,7 +1055,7 @@ export default {
   .table-filter {
     box-sizing: border-box;
     background-color: #fff;
-    padding: 20px 0;
+    padding: 10px 0;
     .search-coloct {
       height: 48px;
       overflow: hidden;
@@ -881,9 +1076,18 @@ export default {
     display: flex;
     justify-content: center;
     background-color: #fff;
-    margin-top: 20px;
-    padding: 12px;
+    margin-top: 10px;
+    padding: 6px;
   }
+}
+::v-deep .el-table {
+  .el-table__fixed {
+    height: auto !important;
+    bottom: 17px !important;
+  }
+  .el-table__fixed::before {
+    height: 0px;
+  } 
 }
 ::v-deep .el-date-editor.el-input,
 ::v-deep .el-radio-group {

@@ -2,9 +2,9 @@
   <div>
     <div class="table">
       <div class="enteringButton">
-        <el-button icon="el-icon-upload2" type="primary" size="mini"
+        <!-- <el-button icon="el-icon-upload2" type="primary" size="mini"
           >导出</el-button
-        >
+        > -->
         <el-button
           type="primary"
           icon="el-icon-plus"
@@ -13,7 +13,11 @@
           >新增</el-button
         >
       </div>
-      <el-table border :data="tableData" style="width: 100%">
+      <el-table
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+        :data="tableData"
+        style="width: 100%"
+      >
         <el-table-column prop="id" label="#" width="40"> </el-table-column>
         <el-table-column prop="departName" label="机构/部门名称">
         </el-table-column>
@@ -198,45 +202,49 @@ export default {
 </script>
 
 
-<style lang="sass" scoped>
-.warpper
-  display: flex
-  flex-direction: column
-  justify-content: space-between
-.table-filter
-  box-sizing: border-box
-  background-color: #fff
+<style lang="scss" scoped>
+.warpper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  .table-filter {
+    box-sizing: border-box;
+    background-color: #fff;
     // border-radius: 10px
-  padding: 15px
+    padding: 15px;
+  }
+  .table {
+    box-sizing: border-box;
+    background-color: #fff;
+    margin-top: 10px;
+    // border-radius: 10px
+    padding: 20px;
+    overflow: hidden;
+    flex: 1;
+    .enteringButton {
+      padding-bottom: 8px;
+    }
+  }
+  .control {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: right;
+    background-color: #fff;
+    margin-top: 10px;
+    // border-radius: 10px
+    padding: 10px;
+    overflow: hidden;
+  }
 
-.table
-  box-sizing: border-box
-  background-color: #fff
-  margin-top: 10px
+  .pagenation {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    background-color: #fff;
+    margin-top: 10px;
     // border-radius: 10px
-  padding: 20px
-  overflow: hidden
-  flex: 1
-.enteringButton
-  padding-bottom: 8px
-
-.control
-  box-sizing: border-box
-  display: flex
-  justify-content: right
-  background-color: #fff
-  margin-top: 10px
-    // border-radius: 10px
-  padding: 10px
-  overflow: hidden
-
-.pagenation
-  box-sizing: border-box
-  display: flex
-  justify-content: center
-  background-color: #fff
-  margin-top: 10px
-    // border-radius: 10px
-  padding: 6px
-  overflow: hidden
+    padding: 6px;
+    overflow: hidden;
+  }
+}
 </style>

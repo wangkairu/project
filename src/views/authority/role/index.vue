@@ -6,8 +6,12 @@
           >新增</el-button
         >
       </div>
-      <el-table border style="width: 100%" :data="tableData">
-        <el-table-column prop="id" label="ID"></el-table-column>
+      <el-table
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+        style="width: 100%"
+        :data="tableData"
+      >
+        <el-table-column fixed type="index" label="#"> </el-table-column>
         <el-table-column prop="roleName" label="角色名称">
           <template slot-scope="scope">
             <el-input
@@ -50,15 +54,20 @@
     </div>
     <el-dialog :title="title" :visible.sync="dialogVisible" width="30%">
       <el-form
+        :rules="rules"
         :model="ruleForm"
         ref="ruleForm"
-        label-width="100px"
+        label-width="110px"
         class="demo-ruleForm"
       >
-        <el-form-item label="角色名称">
-          <el-input v-model="ruleForm.roleName"></el-input>
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input
+            size="mini"
+            v-model="ruleForm.roleName"
+            placeholder="请输入角色名称"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="是否管理员">
+        <el-form-item label="是否管理员" prop="isAdmin">
           <el-radio-group v-model="ruleForm.isAdmin">
             <el-radio label="是"></el-radio>
             <el-radio label="否"></el-radio>
@@ -97,6 +106,11 @@
         <el-table-column type="selection" width="50"> </el-table-column>
         <el-table-column prop="menuId" label="#" width="50"> </el-table-column>
         <el-table-column prop="menuTitle" label="菜单名称"> </el-table-column>
+        <el-table-column prop="menuType" label="菜单类型">
+          <template slot-scope="scope">
+            <span>{{ scope.row.menuType==1?'网页菜单':'PDA菜单' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="operateList" label="操作">
           <template slot-scope="{ row }">
             <span
@@ -129,6 +143,11 @@
         <el-table-column prop="title" label="标题" width="120">
         </el-table-column>
         <el-table-column prop="path" label="路径"> </el-table-column>
+        <el-table-column prop="type" label="类型" width="120">
+          <template slot-scope="scope">
+            <span>{{ scope.row.type==2?"PDA菜单":"网页菜单" }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="operateList" label="操作">
           <template slot-scope="{ row }">
             <span
@@ -199,6 +218,14 @@ export default {
         roleName: "",
         isAdmin: "",
         description: "",
+      },
+      rules: {
+        roleName: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+        ],
+        isAdmin: [
+          { required: true, message: '请选择是否管理员', trigger: 'change' }
+        ],
       },
       total: 0,
       listQuery: {
@@ -329,6 +356,17 @@ export default {
       const res = await bindMenuToRole(params);
       if (res.code === "0") {
         this.dialogVisible_1 = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     changeOperateMenu(id, name, isChecked) {
@@ -397,6 +435,17 @@ export default {
         this.ruleForm = {};
         this.queryRoleList();
         this.dialogVisible = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     handelCancel() {
@@ -417,9 +466,15 @@ export default {
           if (res.code === "0") {
             this.queryRoleList();
             this.$message({
-              message: "删除成功",
+              message: res.msg,
               type: "success",
             });
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error',
+              duration: 1000
+            })
           }
         })
         .catch(() => {

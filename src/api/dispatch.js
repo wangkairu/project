@@ -70,3 +70,74 @@ export function getFreeStockAreaList(type) {
         // data: params
     })
 }
+// 
+export function queryDeliverGoodsTypeList(params){
+    return request({
+       url:`/wms/deliver-goods/queryDeliverGoodsTypeList?page=${params.page}&size=${params.size}`,
+       method:"post",
+       data:params
+    })
+}
+
+export function createDeliverGoods(params){
+    return request({
+        url:"/wms/deliver-goods/create",
+        method:"post",
+        data:params,
+    })
+}
+// /wms/deliver-goods/queryDeliverGoodsLocationList
+export function queryDeliverGoodsLocationList(params){
+    return request({
+        url:"/wms/deliver-goods/queryDeliverGoodsLocationList",
+        method:"post",
+        data:params
+    })
+}
+// 
+
+// export function getFreeStockAreaListGoods(warehouseCode){
+//     return request({
+//         url:`/wms/deliver-goods/getFreeStockAreaList/${warehouseCode}`,
+//         method:'get',
+//     })
+// }
+// 
+export function getStockAreaColInfo(params){
+    return request({
+        url:`/wms/deliver-goods/getStockAreaColInfo/${params.warehouseCode}/${params.areaCode}`,
+        method:'get', 
+    })
+}
+
+export function deliverConfirm(params){
+    return request({
+        url:"/wms/deliver-goods/confirm",
+        method:"post",
+        data:params,
+    })
+}
+export function turnBack(params){
+    return request({
+        url:"/wms/deliver-goods/turnBack",
+        method:"post",
+        data:params,
+    })
+}
+// 
+export function cancelDeliverGoods(params){
+    return request({
+        url:"/wms/deliver-goods/cancel",
+        method:"post",
+        data:params,
+    })
+}
+
+// 
+export function cancelDeliverGoodsDetail(params){
+    return request({
+        url:"/wms/deliver-goods-detail/cancel",
+        method:"post",
+        data:params,
+    })
+}

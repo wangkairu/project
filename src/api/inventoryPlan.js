@@ -46,3 +46,22 @@ export function sysUserGetUserList(params) {
         params,
     })
 }
+
+// 获取月盘点
+export function queryCheckPlanMonthList(params){
+    return request({
+        url:`/wms/check-plan-month/queryCheckPlanMonthList/${params.year}/${params.month}`,
+        method:"post",
+        data:params
+    })
+}
+
+// 编辑月盘点
+// 
+export function editCheckPlanMonth(params){
+    return request({
+        url:"/wms/check-plan-month/editCheckPlanMonth",
+        method:"put",
+        data:params,
+    })
+}

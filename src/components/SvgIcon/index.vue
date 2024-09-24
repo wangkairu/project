@@ -22,13 +22,11 @@ export default {
   props: {
     iconClass: {
       type: String,
-
       required: true,
     },
 
     className: {
       type: String,
-
       default: "",
     },
   },
@@ -65,22 +63,16 @@ export default {
 
 <style scoped>
 .svg-icon {
-  width: 1em;
-
-  height: 1em;
-
-  vertical-align: -0.15em;
-
+  width: 1.2rem;
+  height: 1.2rem;
+  vertical-align: -0.25rem;
   fill: currentColor;
-
   overflow: hidden;
 }
 
 .svg-external-icon {
   background-color: currentColor;
-
   mask-size: cover !important;
-
   display: inline-block;
 }
 </style>

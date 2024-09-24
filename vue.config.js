@@ -3,13 +3,43 @@ const path = require('path')
 function resolve(dir) {
     return path.join(__dirname, dir)
 }
+const px2rem = require('postcss-px2rem')
+
+// 配置基本大小
+const postcss = px2rem({
+    // 基准大小 baseSize，需要和rem.js中相同
+    remUnit: 16
+})
 module.exports = {
     publicPath: './',
     outputDir: 'dist',
     assetsDir: 'static',
     lintOnSave: process.env.NODE_ENV === 'development',
     productionSourceMap: false,
-    filenameHashing: true,
+    // filenameHashing: true,
+    devServer: {
+        host: '0.0.0.0',
+	    port: 8080,
+        // proxy: {
+        //   '/api': {
+        //     target: 'http://localhost:80',// 后端接口
+        //     changeOrigin: true, // 是否跨域
+        //     pathRewrite: {
+        //         '^/api': '' 
+        //     }
+        //   }
+        // }
+    },
+
+    css: {
+        loaderOptions: {
+            postcss: {
+                plugins: [
+                    postcss
+                ]
+            }
+        }
+    },
     // svg配置该内容↓
     chainWebpack(config) {
         config.plugins.delete('preload') // TODO: need test

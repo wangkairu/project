@@ -3,12 +3,12 @@
     <div class="table-filter">
       <SearchFilter
         label-width="120px"
-        :maxShow="5"
+        :maxShow="3"
         :collapsiable="true"
         @search="search"
         @reset="reset"
       >
-        <el-form-item label="库房编号" prop="echoWarehouseCode">
+        <el-form-item label="库房" prop="echoWarehouseCode">
           <el-select
             size="mini"
             clearable
@@ -24,7 +24,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="功能区" prop="echoFunctionType">
+        <!-- <el-form-item label="功能区" prop="echoFunctionType">
           <el-select
             size="mini"
             v-model="echoFunctionType"
@@ -52,12 +52,13 @@
               :value="item.key"
             />
           </el-select>
-        </el-form-item>
-        <el-form-item label="功能类型下分区" prop="echoFunctionAreaCode">
+        </el-form-item> -->
+        <el-form-item label="区域编号" prop="echoFunctionAreaCode">
           <el-select
+            clearable
             size="mini"
             v-model="echoFunctionAreaCode"
-            placeholder="请选择功能类型下分区"
+            placeholder="请选择区域编号"
             @change="echoFunctionAreaCodeChanged"
           >
             <el-option
@@ -75,6 +76,7 @@
             v-model="echoColIndexAliasList"
             placeholder="请选择库列编号"
             size="mini"
+            filterable
           >
             <el-option
               v-for="item in echoOptions"
@@ -98,7 +100,7 @@
         >
         <el-upload
           action="#"
-          :before-upload="beforeUpload"
+          :http-request="beforeUpload"
           class="upload-demo"
           accept=".xls,.xlsx"
           multiple
@@ -113,9 +115,32 @@
           class="export"
           >绑定入库规则</el-button
         >
+        <el-switch
+          v-model="enable"
+          active-text="是否启用"
+          style="margin-left: 10px;"
+          @change="handelEnable">
+        </el-switch>
+        <el-button
+          v-show="this.data.length>0"
+          type="primary"
+          @click="handelDeleteData"
+          size="mini"
+          class="export"
+          >删除</el-button
+        >
       </div>
       <div class="box">
-        <el-table border :data="data" style="width: 100%">
+        <!--           @selection-change="handleSelectionChange" -->
+        <el-table
+          :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+          :data="data"
+          style="width: 100%"
+        >
+          <!-- <el-table-column
+            type="selection"
+            width="55">
+          </el-table-column> -->
           <el-table-column
             width="270"
             prop="goodsType"
@@ -138,12 +163,15 @@
               </div>
             </template>
           </el-table-column>
+          <el-table-column
+            prop="enableEnum"
+            label="是否启用"
+          ></el-table-column>
         </el-table>
       </div>
     </div>
-
     <el-dialog title="绑定入库规则" :visible.sync="dialogVisible" width="50%">
-      <el-form ref="form" :rules="rules" :model="formCon" label-width="130px">
+      <el-form ref="form" :rules="rules" :model="formCon" label-width="140px">
         <el-form-item label="库房编号" prop="warehouseCode">
           <el-select
             clearable
@@ -159,7 +187,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="功能区" prop="functionType">
+        <!-- <el-form-item label="功能区" prop="functionType">
           <el-select
             v-model="functionType"
             @change="functionTypeChanged"
@@ -184,8 +212,8 @@
               :label="item.value"
               :value="item.key"
             /> </el-select
-        ></el-form-item>
-        <el-form-item label="功能类型下分区" prop="functionAreaCode">
+        ></el-form-item> -->
+        <el-form-item label="区域编号" prop="functionAreaCode">
           <el-select
             v-model="functionAreaCode"
             placeholder="请选择功能类型下分区"
@@ -215,63 +243,27 @@
           </el-select>
         </el-form-item>
         <el-form-item label="货物类型">
-          <div class="background">
-            <el-form :model="obj" ref="dynamicValidateForm" label-width="110px">
-              <div
-                class="backgroundItem"
-                v-for="(v, ind) in obj.goodsTypeFormList"
-                :key="ind"
-              >
-                <el-form-item
-                  :prop="`goodsTypeFormList[${ind}].goodsType`"
-                  label="产品类型"
-                  style="margin-top: 8px"
-                  :rules="{
-                    required: true,
-                    message: '请选择产品类型',
-                  }"
-                >
-                  <el-select
-                    clearable
-                    v-model="v.goodsType"
-                    placeholder="请选择产品类型"
-                  >
-                    <el-option
-                      v-for="item in goodsTypeOptions"
-                      :key="item.value"
-                      :label="item.value"
-                      :value="item.key"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item
-                  :prop="`goodsTypeFormList[${ind}].goodsTypeCode`"
-                  label="产品类型编号"
-                  :rules="{
-                    required: true,
-                    message: '请输入产品类型编号',
-                  }"
-                >
-                  <el-input
-                    v-model="v.goodsTypeCode"
-                    placeholder="请输入产品类型编号"
-                  ></el-input>
-                </el-form-item>
-                <i
-                  class="iconfont el-icon-close"
-                  @click="handelDelete(ind)"
-                ></i>
-              </div>
-            </el-form>
-            <el-button
-              @click="handelAddItem('dynamicValidateForm')"
-              type="primary"
-              icon="el-icon-plus"
-              plain
-              >Add Item</el-button
-            >
-          </div>
+          <el-button
+            @click="handelSelect"
+            type="primary"
+            icon="el-icon-plus"
+            plain
+            size="small"
+            >选择货物</el-button
+          >
+          <el-table :header-cell-style="{ background: '#eef1f6', color: '#606266' }" :data="checkedGh" style="width: 100%">
+            <el-table-column  prop="normsSimpleCode" label="规格简称" width="180"></el-table-column>
+            <el-table-column prop="customerShortName" label="客户简称"  width="180"></el-table-column>
+            <el-table-column  prop="wheelType" label="轮型"> </el-table-column>
+            <el-table-column  prop="meterLength" label="米长"> </el-table-column>
+            <el-table-column  prop="leftRightSidesEnum" label="左右面"> </el-table-column>
+            <el-table-column
+              label="操作">
+              <template slot-scope="scope">
+                <el-button @click="handelDeleteSelect(scope.row)" type="text" size="size">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -279,10 +271,48 @@
         <el-button type="primary" @click="submitForm()">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog title="选择货物类型" :visible.sync="selectFlag" width="50%">
+      <SearchFilter
+        label-width="80px"
+        :maxShow="6"
+        :collapsiable="true"
+        @search="search1"
+        @reset="reset1"
+      >
+        <el-form-item  label="客户简称" prop="echoWarehouseCode">
+          <el-input clearable size="mini" v-model="form.customerShortName" placeholder="请输入内容" @input="handelCustomer"></el-input>
+        </el-form-item>
+        <el-form-item label="规格简称" prop="echoWarehouseCode">
+          <el-input clearable size="mini" v-model="form.normsSimpleCode" placeholder="请输入内容" @input="handelCustomer"></el-input>
+        </el-form-item>
+        <el-form-item label="轮型" prop="echoWarehouseCode">
+          <el-input clearable size="mini" v-model="form.wheelType" placeholder="请输入内容" @input="handelCustomer"></el-input>
+        </el-form-item>
+      </SearchFilter>
+      <!-- :reserve-selection="true" :row-key="row=>row.id"-->
+      <el-table ref="tb" @selection-change="handleRadioChange"  :header-cell-style="{ background: '#eef1f6', color: '#606266' }" :data="tableData" style="width: 100%">
+        <el-table-column type="selection" width="55" ></el-table-column>
+        <el-table-column  prop="normsSimpleCode" label="规格简称" width="180"></el-table-column>
+        <el-table-column prop="customerShortName" label="客户简称"  width="180"></el-table-column>
+        <el-table-column  prop="wheelType" label="轮型"> </el-table-column>
+        <el-table-column  prop="meterLength" label="米长"> </el-table-column>
+        <el-table-column  prop="leftRightSidesEnum" label="左右面"> </el-table-column>
+      </el-table>
+      <PageNation
+        style="display: flex;justify-content: center;margin-top: 10px;"
+          v-show="total > 0"
+          :total="total"
+          :page.sync="listQuery.pageNum"
+          :limit.sync="listQuery.pageSize"
+          @pagination="pageChange"
+        />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handelCancel">取 消</el-button>
+        <el-button type="primary" @click="handelconfirm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
-
-
 <script>
 import {
   importWarehouseVirtually,
@@ -291,14 +321,19 @@ import {
   queryColBindRuleList,
   bindColWarehousingRules,
   queryEnumList,
+  enableColRule,
+  deleteColRule
 } from "@/api/location";
+import {queryNormsList} from '@/api/specification'
 import { uploadExcel } from "@/utils/uploadExcel";
 import SearchFilter from "@/components/SearchFilter";
+import PageNation from "@/components/Pagination";
 export default {
   name: "locationAttribute",
-  components: { SearchFilter },
+  components: { SearchFilter,PageNation },
   data() {
     return {
+      enable:"",
       goodsTypeOptions: [],
       goodsTypeCode: "",
       goodsType: "",
@@ -328,14 +363,7 @@ export default {
       colIndexAliasListOptions: [],
       num: [],
       areaCodeList: "",
-      obj: {
-        goodsTypeFormList: [
-          {
-            goodsTypeCode: "",
-            goodsType: "",
-          },
-        ],
-      },
+      goodsTypeFormList: [],
       rules: {
         warehouseCode: [
           { required: true, message: "请选择库房编号", trigger: "blur" },
@@ -375,26 +403,167 @@ export default {
         ],
       },
       tableHeader: [],
+      selectFlag:false,
+      listQuery: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+      total:0,
+      form:{
+        customerShortName: "",
+        normsSimpleCode: "",
+        normsType: '',
+        wheelType: ""
+      },
+      tableData:[],
+      checkedGh:[],
+      selectArr:[],
     };
   },
   mounted() {
     this.getProjectList();
   },
+  watch:{
+    checkedGh:{
+      handler(val){
+        const arr=JSON.parse(sessionStorage.getItem('checkedGh'))
+        if(val.length===0&&arr.length){
+          this.checkedGh = arr
+          this.$nextTick(()=>{
+            arr.forEach((v)=>{
+              this.tableData.forEach((item)=>{
+                if(v.id==item.id){
+                  this.$refs.tb.toggleRowSelection(item, true);
+                }
+              })
+            })
+          })
+        }
+      }
+    }
+  },
   methods: {
+    handelDeleteSelect(row,index){
+      this.$confirm('此操作会删除数据, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          this.checkedGh.splice(index,1)
+          this.goodsTypeFormList.splice(index,1)
+        }).catch(() => {         
+        });
+    },
+    handelDeleteData(){
+      this.$confirm('此操作将永久删除数据, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          const params={
+            onlyCode:this.data.length>0?this.data[0].onlyCode:"",
+            warehouseCode:this.data.length>0?this.data[0].warehouseCode:"",
+          }
+          const res = await deleteColRule(params)
+          if(res.code=='0'){
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });
+            this.queryColBindRuleList();
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'error',
+            message: '已取消删除'
+          });          
+        });
+
+    },
+    handelCustomer(){
+      this.queryNormsList()
+    },
+    search1(){
+      this.queryNormsList()
+    },
+    reset1(){
+      this.form={
+        customerShortName: "",
+        normsSimpleCode: "",
+        normsType: '',
+        wheelType: ""
+      }
+      this.queryNormsList()
+    },
+    pageChange(val) {
+      this.listQuery.pageNum = val.page;
+      this.listQuery.pageSize = val.limit;
+      this.queryNormsList();
+    },
+    async handelEnable() {
+      const params ={
+        enable:this.data[0].enable,
+        onlyCode:this.data.length>0?this.data[0].onlyCode:"",
+        warehouseCode:this.data.length>0?this.data[0].warehouseCode:"",
+      }
+      const res =await enableColRule(params);
+      if(res.code === "0"){
+        this.search();
+      }
+    },
     handelRules() {
       this.dialogVisible = true;
       this.queryEnumList();
     },
     // 添加货物类型集合
-    handelAddItem(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          this.obj.goodsTypeFormList.push({ goodsTypeCode: "", goodsType: "" });
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
+    handleRadioChange(selection){
+      this.checkedGh = selection;
+      // if (selection.length > 1) {
+      //   this.$refs.tb.clearSelection();
+        // this.$refs.tb.toggleRowSelection(selection.pop());
+      // }
+    },
+    async handelSelect() {
+      this.queryNormsList()
+      this.selectFlag=true
+    },
+    async queryNormsList(){
+      const params={
+        request:this.form,
+        page: this.listQuery.pageNum - 1,
+        size: this.listQuery.pageSize,
+      }
+      const res = await queryNormsList(params) 
+      if(res.code==='0'){
+        this.total=res.data.total
+        this.tableData=res.data.items
+      }
+    },
+    handelconfirm(){
+      this.selectFlag=false
+      sessionStorage.setItem("checkedGh",JSON.stringify(this.checkedGh))
+      this.goodsTypeFormList=[]
+      this.checkedGh.forEach((v)=>{
+        this.goodsTypeFormList.push(
+          [{goodsTypeCode: v.normsSimpleCode,goodsType: "NORMS_SHORT_NAME"},
+          {goodsTypeCode: v.customerShortName,goodsType: "CUSTOMER_SHORT_NAME"},
+          {goodsTypeCode: v.wheelType,goodsType: "WHEEL_TYPE"},
+          {goodsTypeCode: v.meterLength,goodsType: "METER_LENGTH"},
+          {goodsTypeCode: v.leftRightSides,goodsType: "LEFT_RIGHT_SIDES"}]
+        )
+      })
+      // this.goodsTypeFormList=[
+      // {goodsTypeCode: this.checkedGh[0].normsSimpleCode,goodsType: "NORMS_SHORT_NAME"},
+      // {goodsTypeCode: this.checkedGh[0].customerShortName,goodsType: "CUSTOMER_SHORT_NAME"},
+      // {goodsTypeCode: this.checkedGh[0].wheelType,goodsType: "WHEEL_TYPE"},
+      // {goodsTypeCode: this.checkedGh[0].meterLength,goodsType: "METER_LENGTH"},
+      // {goodsTypeCode: this.checkedGh[0].leftRightSides,goodsType: "LEFT_RIGHT_SIDES"},]
+    },
+    handelCancel(){
+      this.$refs.tb.clearSelection();
+      this.checkedGh = []
+      sessionStorage.setItem("checkedGh",JSON.stringify(this.checkedGh))
+      this.selectFlag=false
     },
     // 删除货物类型集合
     handelDelete(ind) {
@@ -405,24 +574,16 @@ export default {
       });
     },
     search() {
-      const params = {
-        areaCode: this.echoColIndexAliasList,
-        colIndexAlias: this.echoNum,
-        functionType: this.echoFunctionType,
-        functionCode: this.echoFunctionCode,
-        functionAreaCode: this.echoFunctionAreaCode,
-      };
-      this.queryColBindRuleList(params);
+      this.queryColBindRuleList();
     },
     reset() {
-      this.echoWarehouseCode = "";
-      this.echoColIndexAliasList = "";
-      this.echoNum = "";
-      this.echoFunctionType = "";
-      this.echoFunctionCode = "";
-      this.echoFunctionAreaCode = "";
-
-      this.queryColBindRuleList(params);
+      this.echoWarehouseCode = ""
+      this.echoNum = ""
+      this.echoColIndexAliasList = ""
+      this.echoFunctionType = ""
+      this.echoFunctionCode = ""
+      this.echoFunctionAreaCode = ""
+      this.queryColBindRuleList();
     },
     // 获取数据
     async getProjectList() {
@@ -435,65 +596,67 @@ export default {
     },
     // 获取第一层
     warehouseCodeChanged(value) {
-      if (value) {
-        this.warehouseCode = value;
-        const params = {
-          warehouseCode: value,
-        };
-        queryWarehouseColDropDown(params).then((res) => {
-          if (res.code == "0") {
-            this.functionTypeOptions = res.data;
-          }
-        });
-      }
+      const params = {
+        warehouseCode: value,
+      };
+      queryWarehouseColDropDown(params).then((res) => {
+        if (res.code == "0") {
+          this.functionTypeOptions = res.data;
+          this.functionType=res.data[1].key
+          this.queryWarehouseColDropDown()
+        }
+      });
     },
     echoWarehouseCodeChanged(val) {
-      if (val) {
-        this.echoWarehouseCode = val;
+      if(!val){
+        this.echoFunctionAreaCode=""
+        this.echoColIndexAliasList=""
+      }else{
         const params = {
           warehouseCode: val,
         };
         queryWarehouseColDropDown(params).then((res) => {
           if (res.code == "0") {
             this.echoFunctionTypeOptions = res.data;
+            this.echoFunctionType = res.data[1].key
+            this.echoFunctionTypeChanged()
           }
         });
       }
     },
     // 获取第三层
     functionTypeChanged(value) {
-      if (value) {
-        this.functionType = value;
-        const params = {
-          warehouseCode: this.warehouseCode,
-          functionType: this.functionType,
-        };
-        queryWarehouseColDropDown(params).then((res) => {
-          if (res.code == "0") {
-            this.functionCodeOptions = res.data;
-          }
-        });
-      }
+      this.queryWarehouseColDropDown()
+    },
+    queryWarehouseColDropDown(){
+      const params = {
+        warehouseCode: this.warehouseCode,
+        functionType: this.functionType,
+      };
+      queryWarehouseColDropDown(params).then((res) => {
+        if (res.code == "0") {
+          this.functionCodeOptions = res.data;
+          this.functionCode = res.data[0].key
+          this.functionCodeChanged()
+        }
+      });
     },
     echoFunctionTypeChanged(val) {
-      if (val) {
-        this.echoFunctionType = val;
-        const params = {
-          warehouseCode: this.echoWarehouseCode,
-          functionType: this.echoFunctionType,
-        };
-        queryWarehouseColDropDown(params).then((res) => {
-          if (res.code == "0") {
-            this.echoFunctionCodeOptions = res.data;
-          }
-        });
-      }
+      const params = {
+        warehouseCode: this.echoWarehouseCode,
+        functionType: this.echoFunctionType,
+      };
+      queryWarehouseColDropDown(params).then((res) => {
+        if (res.code == "0") {
+          this.echoFunctionCodeOptions = res.data;
+          this.echoFunctionCode = res.data[0].key
+          this.echoFunctionCodeChanged()
+        }
+      });
     },
     // 第四层
     functionCodeChanged(value) {
-      if (value) {
-        this.functionCode = value;
-        const params = {
+      const params = {
           warehouseCode: this.warehouseCode,
           functionType: this.functionType,
           functionCode: this.functionCode,
@@ -503,12 +666,9 @@ export default {
             this.functionAreaCodeOptions = res.data;
           }
         });
-      }
     },
     echoFunctionCodeChanged(val) {
-      if (val) {
-        this.echoFunctionCode = val;
-        const params = {
+      const params = {
           warehouseCode: this.echoWarehouseCode,
           functionType: this.echoFunctionType,
           functionCode: this.echoFunctionCode,
@@ -518,33 +678,30 @@ export default {
             this.echoFunctionAreaCodeOptions = res.data;
           }
         });
-      }
     },
     // 第五层
     functionAreaCodeChanged(value) {
-      if (value) {
-        this.functionAreaCode = value;
-        const params = {
-          warehouseCode: this.warehouseCode,
-          functionType: this.functionType,
-          functionCode: this.functionCode,
-          functionAreaCode: this.functionAreaCode,
-        };
-        queryWarehouseColDropDown(params).then((res) => {
-          if (res.code == "0") {
-            this.colIndexAliasListOptions = res.data.map((v) => {
-              return {
-                key: v.value,
-                value: v.key,
-              };
-            });
-          }
-        });
-      }
+      const params = {
+        warehouseCode: this.warehouseCode,
+        functionType: this.functionType,
+        functionCode: this.functionCode,
+        functionAreaCode: this.functionAreaCode,
+      };
+      queryWarehouseColDropDown(params).then((res) => {
+        if (res.code == "0") {
+          this.colIndexAliasListOptions = res.data.map((v) => {
+            return {
+              key: v.value,
+              value: v.key,
+            };
+          });
+        }
+      });
     },
     echoFunctionAreaCodeChanged(val) {
-      if (val) {
-        this.echoFunctionAreaCode = val;
+      if(!val){
+        this.echoColIndexAliasList=""
+      }else{
         const params = {
           warehouseCode: this.echoWarehouseCode,
           functionType: this.echoFunctionType,
@@ -559,10 +716,10 @@ export default {
                 value: v.key,
               };
             });
-            console.log(this.echoOptions, "  this.echoOptions");
           }
         });
       }
+     
     },
     // 库列选择
     colIndexAliasListChanged(val) {
@@ -583,39 +740,58 @@ export default {
           }
         });
         this.echoColIndexAliasList = val;
-        const params = {
+      
+        this.queryColBindRuleList();
+      }
+    },
+    // 库列回显
+    async queryColBindRuleList() {
+      const params = {
           areaCode: this.echoNum,
           colIndexAlias: this.echoColIndexAliasList,
           functionType: this.echoFunctionType,
           functionCode: this.echoFunctionCode,
           functionAreaCode: this.echoFunctionAreaCode,
         };
-        this.queryColBindRuleList(params);
-      }
-    },
-    // 库列回显
-    async queryColBindRuleList(params) {
       const res = await queryColBindRuleList(params);
-      console.log(res, "res");
       if (res.code === "0") {
         res.data.forEach((v) => {
           this.tableHeader.push(v.goodsTypeEnum);
-          // this.data.push(v.goodsTypeVoList);
         });
         this.data = res.data;
-        console.log(this.data);
+        this.enable = res.data[0].enable===1;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     beforeUpload(file) {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", file.file);
       const res = importWarehouseVirtually(formData);
+      if (res.code === '0') {
+        // this.$message.success(res.msg)
+        this.queryColBindRuleList();
+      } else {
+        this.$message.error(res.msg)
+      }
     },
     // 货物类型集合
     async queryEnumList() {
       const res = await queryEnumList("WarehousingRulesTypeEnum");
       if (res.code === "0") {
         this.goodsTypeOptions = res.data;
+        this.$message.success(res.msg)
+      } else {
+        this.$message.error(res.msg)
       }
     },
     submitForm() {
@@ -623,7 +799,7 @@ export default {
         functionCode: this.functionCode,
         functionType: this.functionType,
         functionAreaCode: this.functionAreaCode,
-        goodsTypeFormList: this.obj.goodsTypeFormList,
+        goodsTypeFormList: this.goodsTypeFormList,
         areaCodeList: this.num,
         colIndexAliasList: this.colIndexAliasList,
       };
@@ -634,9 +810,15 @@ export default {
           this.functionCode = "";
           this.functionType = "";
           this.functionAreaCode = "";
-          this.obj.goodsTypeFormList = [{ goodsType: "", goodsTypeCode: "" }];
+          this.goodsTypeFormList = [];
           this.num = [];
           this.colIndexAliasList = "";
+          this.checkedGh = []
+          sessionStorage.setItem('checkedGh',JSON.stringify(this.checkedGh))
+          this.form={}
+          this.$message.success(res.msg)
+        } else {
+          this.$message.error(res.msg)
         }
       });
     },
@@ -649,6 +831,7 @@ export default {
       this.goodsTypeCode = "";
       this.goodsType = "";
       this.colIndexAliasList = [];
+      this.checkedGh = [];
     },
     async handelExportTemplate() {
       const res = await exportTemplate();
@@ -656,7 +839,6 @@ export default {
       const fileName = "成品箱虚拟库位导入模板.xlsx";
       uploadExcel(fileName, blob);
     },
-    async queryWarehouseColDropDown() {},
   },
 };
 </script>
@@ -751,10 +933,12 @@ export default {
 ::v-deep .el-form-item {
   margin-bottom: 16px;
 }
-.table-filter ::v-deep .el-select {
+.table-filter .el-select {
   width: 200px;
 }
-
+.el-dialog__body .el-select {
+  width: 400px;
+}
 ::v-deep .el-tree-node__content {
   margin-top: 10px !important;
 }
@@ -763,5 +947,9 @@ export default {
 }
 ::v-deep .el-cascader-panel .el-scrollbar__view:not(:last-child) .el-checkbox {
   display: none;
+}
+::v-deep .el-table__header-wrapper  .el-checkbox{
+    //找到表头那一行，然后把里面的复选框隐藏掉
+	display:none
 }
 </style>

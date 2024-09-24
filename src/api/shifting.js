@@ -59,3 +59,43 @@ export function queryMoveDetailList(mainCode) {
         method: "get",
     })
 }
+
+// 选择移库区域的信息
+export function getMoveAreaInfo(warehouseCode) {
+    return request({
+        url:`/wms/move/getMoveAreaInfo/${warehouseCode}`,
+        method:"get",
+    })
+}
+
+// 选择移库起始列的信息
+export function getMoveColStartInfo(params) {
+    return request({
+        url:`/wms/move/getMoveColStartInfo/${params.warehouseCode}/${params.area}`,
+        method:"get",
+    })
+}
+
+// 选择移库终点列的信息
+export function getMoveColTargetInfo(params) {
+    return request({
+        url:`/wms/move/getMoveColTargetInfo/${params.warehouseCode}/${params.onlyCode}`,
+        method:"get",
+    })
+}
+
+// 获取选择的库列货物信息
+export function getSelectColGoodsInfo(params) {
+    return request({
+        url:`/wms/move/getSelectColGoodsInfo/${params.warehouseCode}/${params.onlyCode}`,
+        method:"get",
+    })
+}
+// 移库单确认
+export function moveConfirm(arr){
+    return request({
+        url:'/wms/move/confirm',
+        method:"post",
+        data:arr,
+    })
+}

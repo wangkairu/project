@@ -8,87 +8,214 @@
 -->
 <template>
   <div>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>成品库存概述</span>
-      </div>
-      <div id="inventory" style="height: 300px; width: 100%"></div>
-    </el-card>
-    <div class="display" style="display: flex">
-      <el-card
-        style="flex: 0.8; margin: 10px 0; margin-right: 20px; background: #fff"
-      >
+    <div style="display: flex;">
+      <el-card class="box-card" style="flex: 1.8;margin: 10px 0;margin-right: 20px;">
         <div slot="header" class="clearfix">
-          <span>入库排行榜</span>
-          <!-- <el-radio-group
-            v-model="salesPerType"
-            size="mini"
-            @input="salesPerTypeChange"
-          >
-            <el-radio-button label="sales">出库</el-radio-button>
-            <el-radio-button label="cost">入库</el-radio-button>
-          </el-radio-group> -->
-        </div>
-        <div class="saleRank">
-          <div class="row" v-for="(item, index) in arr" :key="index">
-            <div>
-              <span class="index" :class="[index < 3 ? 'rank-top' : '']">{{
-                index + 1
-              }}</span>
-              <span class="client">{{ item.name }}</span>
-            </div>
-
-            <span class="profit">{{ item.splifice }}</span>
+          <div class="clearfixLeft">
+            <span>出入库比例</span>
+            <!-- <el-input style="width: 200px;margin-left: 10px;" size="mini" v-model="query.mesBranchFactory" placeholder="请输入分厂名称"></el-input> -->
+          </div>
+          <div class="clearfix">
+            <el-radio-group
+              v-model="query.dateType"
+              size="mini"
+              style="margin-right: 10px"
+              @input="dateTypeChange"
+            >
+              <el-radio-button label="year">年统计</el-radio-button>
+              <el-radio-button label="month">月统计</el-radio-button>
+            </el-radio-group>
+            <el-date-picker 
+              v-show="query.dateType == 'year'"
+              v-model="query.year"
+              type="year"
+              placeholder="选择年"
+              size="mini"
+              value-format="yyyy"
+              @change="yearChange"
+            >
+            </el-date-picker>
+            <el-date-picker
+              v-show="query.dateType == 'month'"
+              v-model="query.month"
+              type="month"
+              placeholder="选择月"
+              size="mini"
+              value-format="yyyy-M"
+              @change="monthChange"
+            >
+            </el-date-picker>
           </div>
         </div>
+        <div id="inventory" style="height: 300px; width: 100%"></div>
       </el-card>
-      <el-card class="box-card" style="flex: 3; margin: 10px 0">
-        <div slot="header" class="clearfix">
-          <span>成品入库柱状图</span>
-        </div>
-        <div id="main" style="height: 300px; width: 100%"></div>
+      <el-card class="box-card" style="flex: 1;margin: 10px 0;margin-right: 20px;">
+            <div slot="header" class="clearfix">
+                <div class="clearfixLeft">
+                <span>发货方式</span>
+                <!-- <el-input style="width: 200px;margin-left: 10px;" size="mini" v-model="shipping.mesBranchFactory" placeholder="请输入分厂名称"></el-input> -->
+                </div>
+                <div class="clearfix">
+                <el-radio-group
+                    v-model="shipping.dateType"
+                    size="mini"
+                    style="margin-right: 10px"
+                    @input="dateTypeChangeShip"
+                >
+                    <el-radio-button label="year">年统计</el-radio-button>
+                    <el-radio-button label="month">月统计</el-radio-button>
+                </el-radio-group>
+                <el-date-picker 
+                    v-show="shipping.dateType == 'year'"
+                    v-model="shipping.year"
+                    type="year"
+                    placeholder="选择年"
+                    size="mini"
+                    value-format="yyyy"
+                    @change="yearChangeShip"
+                >
+                </el-date-picker>
+                <el-date-picker
+                    v-show="shipping.dateType == 'month'"
+                    v-model="shipping.month"
+                    type="month"
+                    placeholder="选择月"
+                    size="mini"
+                    value-format="yyyy-M"
+                    @change="monthChangeShip"
+                >
+                </el-date-picker>
+                </div>
+            </div>
+            <div id="shipping" style="height: 300px; width: 100%"></div>
       </el-card>
     </div>
-    <div class="display" style="display: flex">
-      <el-card
-        style="flex: 0.8; margin: 10px 0; margin-right: 20px; background: #fff"
-      >
+    <div style="display: flex;">
+      <el-card class="box" style="flex: 2;margin: 10px 0;margin-right: 20px;">
         <div slot="header" class="clearfix">
-          <span>出库排行榜</span>
-          <!-- <el-radio-group
-            v-model="salesPerType"
-            size="mini"
-            @input="salesPerTypeChange"
-          >
-            <el-radio-button label="sales">出库</el-radio-button>
-            <el-radio-button label="cost">入库</el-radio-button>
-          </el-radio-group> -->
-        </div>
-        <div class="saleRank">
-          <div class="row" v-for="(item, index) in arr" :key="index">
-            <div>
-              <span class="index" :class="[index < 3 ? 'rank-top' : '']">{{
-                index + 1
-              }}</span>
-              <span class="client">{{ item.name }}</span>
-            </div>
-
-            <span class="profit">{{ item.splifice }}</span>
+          <div class="clearfixLeft">
+            <span>入库排行报表</span>
           </div>
         </div>
+        <el-table
+        :data="InRank"
+        style="width: 100%">
+        <el-table-column
+            label="序号"
+            type="index"
+            width="50">
+        </el-table-column>
+        <el-table-column
+          label="客户全称"
+          prop="name">
+        </el-table-column>
+          <el-table-column
+            label="总计"
+            prop="total"
+            width="60">
+          </el-table-column>
+          <el-table-column
+            align="right">
+            <template slot="header" slot-scope="scope">
+              <el-date-picker
+               style="width: 170px;"
+                v-model="value1"
+                size="mini"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                @change="handelChange">
+              </el-date-picker>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-card>
-      <el-card class="box-card" style="flex: 3; margin: 10px 0">
+      <el-card class="box" style="flex: 2;margin: 10px 0;">
         <div slot="header" class="clearfix">
-          <span>成品出库柱状图</span>
+          <div class="clearfixLeft">
+            <span>出库排行报表</span>
+          </div>
         </div>
-        <div id="main" style="height: 300px; width: 100%"></div>
+        <el-table
+        :data="outRank"
+        style="width: 100%">
+        <el-table-column
+            label="序号"
+            type="index"
+            width="50">
+          </el-table-column>
+          <el-table-column
+            label="客户全称"
+            prop="name">
+          </el-table-column>
+          <el-table-column
+            label="总计"
+            prop="total"
+            width="60">
+          </el-table-column>
+          <el-table-column
+            align="right">
+            <template slot="header" slot-scope="scope">
+              <el-date-picker
+                style="width: 170px;"
+                v-model="value2"
+                size="mini"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                @change="handelChangeOut">
+              </el-date-picker>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+    <div style="display: flex;">
+      <el-card class="box" style="flex: 2;margin: 10px 0;margin-right: 20px;">
+        <div slot="header" class="clearfix">
+          <div class="clearfixLeft">
+            <span>入库排行柱状图</span>
+          </div>
+          <el-date-picker
+            v-model="value3"
+            size="mini"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="handelChangeIn">
+          </el-date-picker>
+        </div>
+        <div id="inRank" style="height: 200px; width: 100%"></div>
+      </el-card>
+      <el-card class="box" style="flex: 2;margin: 10px 0;">
+        <div slot="header" class="clearfix">
+          <div class="clearfixLeft">
+            <span>出库排行柱状图</span>
+          </div>
+          <el-date-picker
+            v-model="value4"
+            size="mini"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            @change="handelChangedate">
+          </el-date-picker>
+        </div>
+        <div id="outRank" style="height: 200px; width: 100%"></div>
       </el-card>
     </div>
   </div>
 </template>
 
 <script>
+import {getGraphWMSDeliverByYear,getGraphWMSDeliverByMonth,} from '@/api/index'
+import {getRatio,getRankingList} from '@/api/index'
 import * as echarts from "echarts";
+import moment from 'moment'
 export default {
   data() {
     return {
@@ -96,8 +223,9 @@ export default {
       salesPerType: "sales",
       query: {
         year: `${new Date().getFullYear()}`,
-        month: `${new Date().getFullYear()}-${new Date().getMonth() + 1}`,
-        dateType: "year",
+        month: `${new Date().getMonth()==0?new Date().getFullYear()-1:new Date().getFullYear()}-${new Date().getMonth()==0?12:new Date().getMonth()}`,
+        dateType: "month",
+        mesBranchFactory:"",
       },
       arr: [
         {
@@ -141,114 +269,397 @@ export default {
         //   splifice: "50",
         // },
       ],
+      newDate:[],
+      data:[],
+      tableData:[],
+      value1:[`${new Date()}`,`${new Date()}`],
+      value2:[`${new Date()}`,`${new Date()}`],
+      InRank:[],
+      outRank:[],
+      value3:[`${new Date()}`,`${new Date()}`],
+      value4:[`${new Date()}`,`${new Date()}`],
+      RankIn:[],
+      RankOut:[],
+      shipping: {
+        year: `${new Date().getFullYear()}`,
+        month: `${new Date().getMonth()==0?new Date().getFullYear()-1:new Date().getFullYear()}-${new Date().getMonth()==0?12:new Date().getMonth()}`,
+        dateType: "month",
+      },
+      ship:[],
     };
   },
-  //   computed: {
-  //     ...mapState("dataVisual", {
-  //       salesInfo: (state) => state.salesInfo,
-  //     }),
-  //     // clientRank() {},
-  //   },
   mounted() {
-    this.getProducts();
-    this.getInventory();
+    this.updateStare();
+    this.updateStareShip();
+    this.getRankingList()
+    this.getRankingListOut()
+    this.getRankingListIn()
+    this.getRankingListOutRank()
+    // this.dateTypeChangeShip()
   },
   methods: {
+    dateTypeChangeShip() {
+      this.updateStareShip();
+    },
+    yearChangeShip(newVal) {
+    //重置月选择
+      this.updateStareShip();
+    },
+    monthChangeShip(newVal) {
+      this.updateStareShip();
+    },
+    updateStareShip(){
+        switch (this.shipping.dateType) {
+            case "year":
+            this.getGraphWMSDeliverByYear();
+            break;
+            case "month":
+            this.getGraphWMSDeliverByMonth();
+            break;
+        }
+    },
+    async getGraphWMSDeliverByYear(){
+        const params={
+            year:this.shipping.year
+        }
+        const res = await getGraphWMSDeliverByYear(params)
+        this.ship=res.data.map((v)=>{
+            return {
+                ...v,
+                value:v.count
+            }
+        })
+        if(res.code === '0'){
+            var chartDom = document.getElementById('shipping');
+            var myChart = echarts.init(chartDom);
+            var option;
+            option = {
+                title: {
+                    // text: 'Referer of a Website',
+                    // subtext: 'Fake Data',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [
+                    {
+                    // name: 'Access From',
+                    type: 'pie',
+                    radius: '50%',
+                    data: this.ship,
+                    emphasis: {
+                        itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                    }
+                ]
+            };
+            option && myChart.setOption(option);
+        }
+    },
+    async getGraphWMSDeliverByMonth(){
+        const params={
+          ...this.shipping,
+          year:this.shipping.month.split('-')[0],
+          month:this.shipping.month.split('-')[1]
+        }
+        const res = await getGraphWMSDeliverByMonth(params)
+        this.ship=res.data.map((v)=>{
+            return {
+                ...v,
+                value:v.count
+            }
+        })
+        if(res.code === '0'){
+            var chartDom = document.getElementById('shipping');
+            var myChart = echarts.init(chartDom);
+            var option;
+            option = {
+                title: {
+                    // text: 'Referer of a Website',
+                    // subtext: 'Fake Data',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [
+                    {
+                    // name: 'Access From',
+                    type: 'pie',
+                    radius: '50%',
+                    data: this.ship,
+                    emphasis: {
+                        itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                    }
+                ]
+            };
+            option && myChart.setOption(option);
+        }
+    },
+    handelChangedate(){
+      this.getRankingListOutRank()
+    },
+    handelChangeIn(){
+      this.getRankingListIn()
+    },
+    handelChange(){
+      this.getRankingList()
+    },
+    handelChangeOut(){
+      this.getRankingListOut()
+    },
+    dateTypeChange(val) {
+      this.updateStare();
+    },
+    yearChange(newVal) {
+      //重置月选择
+      this.updateStare();
+    },
+    monthChange(newVal) {
+      this.updateStare();
+    },
+    updateStare(){
+      switch (this.query.dateType) {
+        case "year":
+          this.getRatio();
+          break;
+        case "month":
+          this.getRatio();
+        break;
+      }
+    },
+    async getRatio(){
+      const month_1=this.query.month.split("-")
+      let params
+      if(this.query.dateType==='year')
+      {
+        params={
+          year:this.query.year,
+        }
+      }else{
+        params={
+          year:this.query.year,
+          month:month_1[1],
+        }
+      }
+      const res= await getRatio(params)
+      if(res.code==='0'){
+        this.data=res.data.map((v)=>{
+          return {
+            ...v,
+            storage:100 - v.ratio
+          }
+        })
+        const storageIn=this.data.map(v=>{return [v.date,v.ratio]})
+        const storageOut= this.data.map(v=>{return [v.date,v.storage]})
+        if(this.query.dateType==='month')
+        {
+          let days = new Date(month_1[0], month_1[1], 0).getDate()
+          let arr=[]
+          let val = month_1[1]<10?'0'+month_1[1]:month_1[1]
+          for(let i=1;i<=days;i++){
+            arr.push(i>=10?month_1[0]+'-'+val+'-'+i:month_1[0]+'-'+val+'-'+'0'+i)
+          }
+          this.newDate = arr
+        }else{
+          let arr=[]
+          for(let i=1;i<=12;i++){
+            arr.push(i>=10?this.query.year+'-'+i:this.query.year+'-'+'0'+i)
+          }
+          this.newDate = arr
+        }
+        let inventory =  this.$echarts.init(document.getElementById('inventory'));
+        let inventoryOptions = {
+          grid:{
+            top:"10%",
+            left:"3%",
+            right:"4%",
+            bottom:"3%",
+            containLabel:true,
+          },
+          tooltip: {
+            trigger: "item",
+            // formatter: '{b0}({a0}): {c0}<br />{b1}({a1}): {c1}%'
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: true,
+            // prettier-ignore
+            data: this.newDate,
+          },
+          yAxis: {
+            axisLabel: {
+              formatter: '{value}%'
+            },
+          },
+          legend: {
+            // top: '1%',
+            left: 'center'
+          },
+          series: [
+            {
+              name: '出库',
+              type: 'bar',
+              barWidth : '50%',
+              data: storageOut,
+              barWidth:12,
+            },
+            {
+              name: '入库',
+              type: 'bar',
+              barWidth : '50%',
+              data: storageIn,
+              barWidth:12,
+            }
+          ]
+        };
+        inventory.setOption(inventoryOptions);
+      }
+    },
+    async getRankingListOutRank(){
+      const params={
+        newTime:this.value4?moment(this.value4[1]).format('YYYY-MM-DD'):"",
+        olderTime:this.value4?moment(this.value4[0]).format('YYYY-MM-DD'):"",
+        state:1,
+      }
+      const res=await getRankingList(params)
+      if(res.code==='0'){
+        this.RankOut=res.data.date.map((v)=>v.total)
+        const x= res.data.date.map((v)=>v.name)
+        let outRank =  this.$echarts.init(document.getElementById('outRank'));
+        let outRankOptions = {
+          grid:{
+            top:"10%",
+            left:"3%",
+            right:"4%",
+            bottom:"3%",
+            containLabel:true,
+          },
+          tooltip: {
+            trigger: "item",
+          },
+          xAxis: {
+            // type: 'category',
+            // boundaryGap: true,
+            data: x,
+          },
+          yAxis: {
+          },
+          series: [
+            {
+              type: 'bar',
+              barWidth : '30%',
+              // barCateGoryGap:'100%',
+              data: this.RankOut
+            },
+          ]
+        };
+        outRank.setOption(outRankOptions);
+      }
+    },
+    async getRankingListIn(){
+      const params={
+        newTime:this.value3?moment(this.value3[1]).format('YYYY-MM-DD'):"",
+        olderTime:this.value3?moment(this.value3[0]).format('YYYY-MM-DD'):"",
+        state:0,
+      }
+      const res=await getRankingList(params)
+      if(res.code==='0'){
+        this.RankIn=res.data.date.map((v)=>v.total)
+        const x= res.data.date.map((v)=>v.name)
+        let inRank =  this.$echarts.init(document.getElementById('inRank'));
+        let inRankOptions = {
+          grid:{
+            top:"10%",
+            left:"3%",
+            right:"4%",
+            bottom:"3%",
+            containLabel:true,
+          },
+          tooltip: {
+            trigger: "item",
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: true,
+            data: x,
+          },
+          yAxis: {},
+          series: [
+            {
+              type: 'bar',
+              barWidth : '30%',
+              data: this.RankIn
+            },
+          ]
+        };
+        inRank.setOption(inRankOptions);
+      }
+    },
+    async getRankingList(){
+      const params={
+        newTime:this.value1?moment(this.value1[1]).format('YYYY-MM-DD'):"",
+        olderTime:this.value1?moment(this.value1[0]).format('YYYY-MM-DD'):"",
+        state:0,
+      }
+      const res = await getRankingList(params)
+      if(res.code==='0'){
+        this.InRank=res.data.date
+      }
+    },
+    async getRankingListOut(){
+      const params={
+        newTime:this.value2?moment(this.value2[1]).format('YYYY-MM-DD'):"",
+        olderTime:this.value2?moment(this.value2[0]).format('YYYY-MM-DD'):"",
+        state:1,
+      }
+      const res = await getRankingList(params)
+      if(res.code==='0'){
+        this.outRank=res.data.date
+      }
+    },
     getInventory() {
       let chartDom = document.getElementById('inventory');
       let myChart = echarts.init(chartDom);
       let option;
       option = {
         tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
+          trigger: "item",
         },
-        legend: {
-          data: ['Forest', 'Steppe', 'Desert', 'Wetland']
+        xAxis: {
+          type: 'category',
+          boundaryGap: true,
+          data: this.newDate,
         },
-        // toolbox: {
-        //   show: true,
-        //   orient: 'vertical',
-        //   left: 'right',
-        //   top: 'center',
-        // feature: {
-        //   mark: { show: true },
-        //   dataView: { show: true, readOnly: false },
-        //   magicType: { show: true, type: ['line', 'bar', 'stack'] },
-        //   restore: { show: true },
-        //   saveAsImage: { show: true }
-        // }
-        // },
-        xAxis: [
-          {
-            type: 'category',
-            axisTick: { show: false },
-            data: [
-              "7:00",
-              "8:00",
-              "9:00",
-              "10:00",
-              "11:00",
-              "12:00",
-              "13:00",
-              "14:00",
-              "15:00",
-              "16:00",
-              "17:00",
-              "18:00",
-            ].map(function (str) {
-              return str.replace(" ", "\n");
-            }),
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value'
-          }
-        ],
+        yAxis: {},
         series: [
           {
-            name: 'Forest',
+            // name: 'Desert',
             type: 'bar',
-            barGap: 0,
-            // label: labelOption,
-            emphasis: {
-              focus: 'series'
-            },
-            data: [320, 332, 301, 334, 390, 100, 150, 400, 200, 265, 235, 355]
+            barWidth : '50%',
+            data: this.data,
           },
-          {
-            name: 'Steppe',
-            type: 'bar',
-            // label: labelOption,
-            emphasis: {
-              focus: 'series'
-            },
-            data: [220, 182, 191, 234, 290, 130, 140, 320, 222, 215, 305, 295]
-          },
-          {
-            name: 'Desert',
-            type: 'bar',
-            // label: labelOption,
-            emphasis: {
-              focus: 'series'
-            },
-            data: [150, 232, 201, 154, 190, 150, 240, 360, 252, 275, 385, 400]
-          },
-          {
-            name: 'Wetland',
-            type: 'bar',
-            // label: labelOption,
-            emphasis: {
-              focus: 'series'
-            },
-            data: [98, 77, 101, 99, 40, 130, 140, 320, 222, 215, 305, 295]
-          }
         ]
       }
-      option && myChart.setOption(option);
+      myChart.setOption(option);
     },
     getProducts() {
       var chartDom = document.getElementById("main");
@@ -291,25 +702,9 @@ export default {
           //   },
         ],
       };
-
       option && myChart.setOption(option);
     },
-    salesPerTypeChange(newVal) {
-      switch (newVal) {
-        case "sales":
-          // this.renderSalesPer(
-          //   `销售额\n${this.salesInfo.categoriesPer.totalSales}`,
-          //   this.salesInfo.categoriesPer.sales
-          // );
-          break;
-        case "cost":
-          // this.renderSalesPer(
-          //   `成本\n${this.salesInfo.categoriesPer.totalCost}`,
-          //   this.salesInfo.categoriesPer.cost
-          // );
-          break;
-      }
-    },
+   
     renderSales() {
       let sales = this.$echarts.init(this.$refs["sales"]);
       let salesOptions = {
@@ -411,59 +806,6 @@ export default {
       };
       this.$echarts.init(this.$refs["salesPer"]).setOption(salesPerOptions);
     },
-    // salesPerTypeChange(newVal) {
-    //   switch (newVal) {
-    //     case "sales":
-    //       this.renderSalesPer(
-    //         `销售额\n${this.salesInfo.categoriesPer.totalSales}`,
-    //         this.salesInfo.categoriesPer.sales
-    //       );
-    //       break;
-    //     case "cost":
-    //       this.renderSalesPer(
-    //         `成本\n${this.salesInfo.categoriesPer.totalCost}`,
-    //         this.salesInfo.categoriesPer.cost
-    //       );
-    //       break;
-    //     case "profit":
-    //       this.renderSalesPer(
-    //         `利润\n${this.salesInfo.categoriesPer.totalProfit}`,
-    //         this.salesInfo.categoriesPer.profit
-    //       );
-    //       break;
-    //   }
-    // },
-    dateTypeChange() {
-      this.updata();
-    },
-    yearChange() {
-      this.updata();
-    },
-    monthChange() {
-      this.updata();
-    },
-    //更新数据
-    async updata() {
-      let query = {};
-      switch (this.query.dateType) {
-        case "year":
-          query.year = this.query.year;
-          break;
-        case "month":
-          query.year = this.query.month.split("-")[0];
-          query.month = this.query.month.split("-")[1];
-          break;
-      }
-
-      this.chartsLoading = true;
-      // let res = await this.$store
-      //   .dispatch("dataVisual/getSalesInfo", query)
-      //   .catch(() => {
-      //     this.chartsLoading = false;
-      //   });
-      // this.chartsLoading = false;
-    },
-
     dataFormat: function (date) {
       if (!date) return "xxxx-xx-xx xx:xx:xx";
       return formatDate(new Date(date));
@@ -472,23 +814,13 @@ export default {
       return formatAmount(amount);
     },
   },
-
-  // watch: {
-  //   salesInfo: {
-  //     handler(newVal) {
-  //       this.renderSales();
-  //       this.renderSalesPer(
-  //         `销售额\n${formatAmount(this.salesInfo.categoriesPer.totalSales)}`,
-  //         this.salesInfo.categoriesPer.sales
-  //       );
-  //       this.$nextTick(() => {});
-  //     },
-  //   },
-  // },
 };
 </script>
 
 <style lang="scss" scoped>
+.box{
+  margin-top: 10px;
+}
 .clearfix {
   display: flex;
   align-items: center;
@@ -531,5 +863,10 @@ export default {
 .rank-top {
   color: #fff;
   background-color: #314659 !important;
+}
+::v-deep .el-table{
+  .el-date-editor--daterange.el-input__inner{
+    width: 15rem;
+  }
 }
 </style>

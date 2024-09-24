@@ -144,8 +144,15 @@
             >重新上报</el-button
           >
           <el-button type="primary" @click="stock = true" size="mini"
-            >备货区清空</el-button
-          >
+            >备货区清空</el-button>
+            <el-button type="primary" @click="handelCreate" size="mini"
+            >创建发货单</el-button>
+            <el-button type="primary" @click="handelStartDispatch" size="mini"
+            >开始发货</el-button>
+            <!-- <el-button type="primary" @click="handelReturn" size="mini"
+            >开始返库</el-button> -->
+            <el-button type="primary" @click="handelCancel_1" size="mini"
+            >发货单取消</el-button>
           <el-popover placement="right" width="500" trigger="click">
             <el-checkbox-group v-model="checkedTableColumns">
               <el-row>
@@ -166,13 +173,32 @@
           </el-popover>
         </div>
         <el-table
-          border
           style="width: 100%"
           :data="tableData"
-          height="500"
           @selection-change="handleSelectionChange"
+          :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         >
-          <el-table-column type="selection" width="55"> </el-table-column>
+     
+          <el-table-column fixed type="selection" width="65"> </el-table-column>
+          <el-table-column fixed type="index" label="#"> </el-table-column>
+          <el-table-column fixed label="操作">
+            <template slot-scope="scope">
+              <!-- <el-button
+                type="text"
+                v-if="scope.row.status === 0"
+                @click="handelClickDeliver(scope.$index, scope.row)"
+                >确认发货</el-button
+              >
+              <el-button v-if="scope.row.status === 0" type="text"
+                >编辑</el-button
+              > -->
+              <el-button
+                type="text"
+                @click="handleDetail(scope.$index, scope.row)"
+                >明细</el-button
+              >
+            </template>
+          </el-table-column>
           <template v-for="(col, index) in bindTableColumns">
             <template v-if="col.label === '状态'">
               <el-table-column
@@ -183,11 +209,6 @@
                 :width="col.width || '100'"
               >
                 <template slot-scope="scope">
-                  <!-- <el-input
-                    v-if="scope.row.status === 0"
-                    v-model="scope.row.statusEnum"
-                    placeholder="请输入状态"
-                  ></el-input> -->
                   <span>
                     <el-tag
                       v-if="
@@ -216,24 +237,6 @@
                 </template>
               </el-table-column>
             </template>
-            <!-- <template v-else-if="col.label === '发货箱数'">
-              <el-table-column
-                :fixed="col.fixed || false"
-                :key="index"
-                :prop="col.attr"
-                :label="col.label"
-                :width="col.width || '100'"
-              >
-                <template slot-scope="scope">
-                  <el-input
-                    v-if="scope.row.status === 0"
-                    v-model="scope.row.deliverBoxNum"
-                    placeholder="请输入发货箱数"
-                  ></el-input>
-                  <span v-else>{{ scope.row.deliverBoxNum }}</span>
-                </template>
-              </el-table-column>
-            </template>  -->
             <template v-else>
               <el-table-column
                 :fixed="col.fixed || false"
@@ -241,28 +244,12 @@
                 :prop="col.attr"
                 :label="col.label"
                 :width="col.width || '100'"
+                :show-overflow-tooltip="col.tooltip || false"
               >
               </el-table-column>
             </template>
           </template>
-          <el-table-column label="操作" width="200">
-            <template slot-scope="scope">
-              <!-- <el-button
-                type="text"
-                v-if="scope.row.status === 0"
-                @click="handelClickDeliver(scope.$index, scope.row)"
-                >确认发货</el-button
-              >
-              <el-button v-if="scope.row.status === 0" type="text"
-                >编辑</el-button
-              > -->
-              <el-button
-                type="text"
-                @click="handleDetail(scope.$index, scope.row)"
-                >明细</el-button
-              >
-            </template>
-          </el-table-column>
+       
         </el-table>
       </div>
       <div class="pagenation">
@@ -277,11 +264,13 @@
     </div>
     <el-dialog title="明细表" :visible.sync="dialogVisible" width="70%">
       <!-- @confirmDetail="confirmDetail" -->
-      <DetailTable
+      <!--  -->
+      <detailTable
         :tableHeader="tableHeader"
         :data="data"
+        @handelCancelDeliver="handelCancelDeliver"
         @handelReplace="handelReplace"
-      ></DetailTable>
+      ></detailTable>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false"
@@ -330,23 +319,199 @@
         <el-button type="primary" @click="handelClean">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="创建发货单"
+      :visible.sync="add"
+      :before-close="handelCancelDispatch"
+      width="60%">
+      <div class="header" style="margin-bottom:10px;padding:4px 0;border-bottom:2px solid #E4E7ED">
+        <el-button @click="handelDispatch" type="primary" size="mini">发货单货物</el-button>
+        <span style="margin-left:10px;font-size:14px;color:#666">请先点击发货单货物</span>
+      </div>
+      <el-form :model="form" size="mini"  ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="规格简称" required>
+              <el-input  v-model="form.mesNormsName" :disabled="true"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="客户简称" required>
+              <el-input  v-model="form.mesCustomerShortName" :disabled="true"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+              <el-form-item label="轮型" required>
+                <el-input  v-model="form.mesWheelType" :disabled="true"></el-input>
+              </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="米长" required>
+              <el-input  v-model="form.mesMeterLength" :disabled="true"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <div class="position">
+          <h4 class="top" style="border-bottom: 2px solid #E4E7ED;margin: 10px 0;padding: 6px 0;">备货区列表信息</h4>
+          <el-form ref="readyArea" :model="readyArea" label-width="110px" size="mini">
+            <el-row>
+              <!-- <el-col :span="8">
+                <el-form-item label="自动分配位置">
+                  <el-switch
+                  v-model="readyArea.autoAllocate" @change="handelSwitch">
+                  </el-switch >
+                </el-form-item>
+              </el-col> -->
+              <el-col :span="8">
+                <el-form-item label="库房">
+                  <el-select v-model="warehouse" placeholder="请选择" @change="handelWarehouse">
+                    <el-option  v-for="(v,ind) in optionsWare" :key="ind" :label="v.value" :value="v.key"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="空闲备货区">
+                  <el-select v-model="readyArea.areaCode" placeholder="请选择" @change="handelstockingArea">
+                    <el-option  v-for="(v,ind) in stockingArea" :key="ind" :label="v.key" :value="v.remark"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+        <el-tabs v-model="activeName" @tab-click="flag=true;">
+          <el-tab-pane label="左面" name="左面">
+            <leftData 
+            :readyArea="readyArea" 
+            :colOptions="colOptions"
+            @handelLeftSelection="handelList" 
+            @handelCount="handelCountList"
+            @handelColOptions="handelColList"></leftData>
+          </el-tab-pane>
+          <el-tab-pane label="右面" name="右面">
+            <div class="right">
+              <rightData 
+              :flag="flag" 
+              :readyArea="readyArea"
+              :colOptions="colOptions"
+              @handelleReftSelection="handelRight"
+              @handelChangeRight="handelChangeRight"
+              @handelCountChange="handelCountChange"></rightData>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handelCancelDispatch">取 消</el-button>
+        <el-button type="primary" @click="handelConfirmDispatch">确 定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="选择发货单货物"
+      :visible.sync="dispatch"
+      width="50%">
+      <div>
+        <el-form  size="mini"  ref="ruleForm" label-width="90px" class="demo-ruleForm">
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="选择产品" prop="name">
+                <el-input v-model="keyWord" @change="handelChange"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="库房">
+                <div class="select">
+                  <el-select
+                    v-model="warehouseCode"
+                    @change="handelWarehouseCode"
+                    placeholder="请选择库房"
+                    size="mini"
+                    clearable
+                  >
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.value"
+                      :value="item.key"
+                    >
+                    </el-option>
+                  </el-select>
+                </div>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+        <div class="tip">注：点击单行数据时使用色块表示已选中</div>
+          <el-table
+            height="360"
+            :data="productList"
+            style="width: 100%"
+            :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+            highlight-current-row
+            @current-change="handleSelectionChangeDispatch">
+              <el-table-column
+                type="index"
+                width="55">
+              </el-table-column>
+              <el-table-column
+                prop="mesNormsName"
+                label="规格名称">
+              </el-table-column>
+              <el-table-column
+                prop="mesCustomerShortName"
+                label="客户简称">
+              </el-table-column>
+              <el-table-column
+                prop="mesWheelType"
+                label="轮型">
+              </el-table-column>
+              <el-table-column
+                prop="mesMeterLength"
+                label="米长">
+              </el-table-column>
+        </el-table>
+        <PageNation
+          style="padding-top:20px;display:flex;justify-content:right;"
+          v-show="totalPage > 0"
+          :total="totalPage"
+          :page.sync="listQueryPage.pageNum"
+          :limit.sync="listQueryPage.pageSize"
+          @pagination="handelPageChange"
+        />
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dispatch = false">取 消</el-button>
+        <el-button type="primary" @click="handelDispatchConfirm">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import StockTable from './components/StockTable.vue'
-import DetailTable from './components/DetailTable.vue'
+import detailTable from './components/DetailTable.vue'
 import LeftTable from './components/LeftTable.vue'
 import RIghtTable from './components/RightTable.vue'
-import PageNation from "@/components/Pagination";
+import PageNation from "@/components/Pagination"
+import leftData from "./components/leftData"
+import rightData from './components/rightData'
 import {
   queryDeliverGoodsList,
-  queryDeliverGoodsDetailList,
   deliverGoodsDetailReport,
   stockingAreaClean,
   queryEnumList,
   getBoxLeftRightList,
-  editDeliverGoodsDetail
+  editDeliverGoodsDetail,
+  queryDeliverGoodsTypeList,
+  createDeliverGoods,
+  getStockAreaColInfo,
+  getFreeStockAreaList,
+  queryDeliverGoodsLocationList,
+  deliverConfirm,
+  turnBack,
+  cancelDeliverGoods,
+  cancelDeliverGoodsDetail,
+  queryDeliverGoodsDetailList
 } from "@/api/dispatch";
 import { uploadExcel } from "@/utils/uploadExcel";
 import SearchFilter from "@/components/SearchFilter";
@@ -356,15 +521,27 @@ export default {
   components: {
     PageNation,
     SearchFilter,
+    leftData,
+    rightData,
     LeftTable,
     RIghtTable,
-    DetailTable,
+    detailTable,
     StockTable
   },
   data: function () {
     return {
+      flag:false,
       leftRight: '0',
       data: [],
+      rightData:[],
+      leftData:[],
+      options:[],
+      optionsWare:[],
+      warehouseCode:"",
+      warehouse:"",
+      keyWord:"",
+      add:false,
+      dispatch:false,
       statusOptions: [],
       wmsDeliverTypeOptions: [
         {
@@ -386,15 +563,35 @@ export default {
       ],
       dialogVisible: false,
       tableData: [],
-      form: {},
+      form: {
+        mesNormsName:"",
+        mesCustomerShortName:"",
+        mesWheelType:"",
+        mesMeterLength:"",
+        total:0,
+      },
+      readyArea:{
+        warehouseCode:"",
+        areaCode:"",
+        autoAllocate:false,
+      },
       tableHeader: "",
       columns: [
         {
           label: "单号",
           attr: "no",
-          width: "160",
+          width: "180",
           show: true,
           fixed: true,
+
+        },
+        {
+          label: "备货完成个数",
+          attr: "count",
+          width: "80",
+          show: true,
+          fixed: true,
+
         },
         {
           label: "客户全称",
@@ -402,18 +599,19 @@ export default {
           width: "180",
           show: true,
           fixed: true,
+          tooltip: true,
         },
         {
           label: "MES客户简称",
           attr: "mesCustomerShortName",
-          width: "100",
+          width: "110",
           show: true,
           fixed: true,
         },
         {
           label: "状态",
           attr: "statusEnum",
-          width: "80",
+          width: "120",
           show: true,
           fixed: true,
         },
@@ -438,13 +636,13 @@ export default {
         {
           attr: "planBoxCountLeft",
           label: "计划箱数左",
-          width: "80",
+          width: "70",
           show: true,
         },
         {
           attr: "planBoxCountRight",
           label: "计划箱数右",
-          width: "80",
+          width: "70",
           show: true,
         },
         {
@@ -458,17 +656,19 @@ export default {
           attr: "receivingUnitLabel",
           width: "160",
           show: true,
+          tooltip: true,
         },
         {
           label: "收货单位（发货单）",
           attr: "receivingUnitDeliveryNote",
           width: "200",
           show: true,
+          tooltip: true,
         },
         {
           label: "WMS发货类型",
           attr: "wmsDeliverTypeEnum",
-          width: "100",
+          width: "80",
           show: true,
         },
         {
@@ -488,6 +688,7 @@ export default {
           attr: "mesCordStructure",
           width: "120",
           show: true,
+          tooltip: true,
         },
         {
           label: "MES轮型",
@@ -504,7 +705,7 @@ export default {
         {
           label: "发货箱数",
           attr: "deliverBoxNum",
-          width: "150",
+          width: "60",
           show: true,
         },
         {
@@ -598,6 +799,11 @@ export default {
         pageNum: 1,
         pageSize: 10,
       },
+      listQueryPage: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+      totalPage:0,
       listQueryDetail: {
         pageNum: 1,
         pageSize: 10,
@@ -607,10 +813,20 @@ export default {
       drawer: false,
       selectData: [],
       detailTotal: 0,
-      leftList: [],
-      rightList: [],
+      leftRightList:[],
       stock: false,
       obj: {},
+      activeName:"左面",
+      productList:[],
+      list:{},
+      stockingArea:[],
+      colOptions:[],
+      selectLeftList:[],
+      selectRightLIst:[],
+      ids:[],
+      backIdS:[],
+      mainCode:"",
+      params:{},
     };
   },
   mounted() {
@@ -636,7 +852,268 @@ export default {
       },
     },
   },
+  // watch:{
+  //   list:{
+  //     handler(val){
+  //       if(val)
+  //       {
+  //         this.readyArea={
+  //           warehouseCode:"",
+  //           areaCode:"",
+  //           autoAllocate:true,
+  //         }
+  //       }
+  //     }
+  //   }
+  // },
   methods: {
+    async handelCancelDeliver(val){
+      const res= await cancelDeliverGoodsDetail(val);
+      if(res.code==='0'){
+        this.queryDeliverGoodsDetailList(this.tableHeader.mainCode)
+      }else if(res.code === '-1'){
+        this.$message.error(res.msg);
+      }
+    },
+    async handelCancel_1(){
+      const res = await cancelDeliverGoods(this.ids)
+      if(res.code==='0'){
+        this.queryDeliverGoodsList();
+      }else if(res.code === '-1')
+      {
+        this.$message.error(res.msg)
+      }
+    },
+    handelCancelDispatch(){
+        this.add=false;
+        this.list={};
+        this.$store.commit('setList',this.list);
+        this.readyArea.autoAllocate=true;
+        this.form={
+          mesNormsName:"",
+          mesCustomerShortName:"",
+          mesWheelType:"",
+          mesMeterLength:"",
+          total:0,
+        },
+        this.readyArea={
+          warehouseCode:"",
+          areaCode:"",
+          autoAllocate:true,
+        },
+        this.leftRightList = [];
+        this.flag = false;
+        this.activeName = "左面"
+    },
+    handelReturn() {
+      if (this.backIdS && this.backIdS.length > 0) {
+        this.turnBack(this.backIdS);
+      }else if (!this.backIdS.includes("已发货")){
+        this.$message({
+          showClose: true,
+          message: "请选择状态是发货完成的单据",
+          type: "warning",
+        });
+      }
+       else {
+        this.$message({
+          showClose: true,
+          message: "请先选择发货单",
+          type: "warning",
+        });
+      }
+    },
+    async turnBack(arr){
+      this.$confirm("是否确定返库？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          const res = await turnBack(arr);
+          if (res.code === "0") {
+            this.queryDeliverGoodsList();
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error',
+              duration: 1000
+            })
+          }
+        })
+        .catch(() => { });
+    },
+    handelStartDispatch(){
+      if (this.ids && this.ids.length > 0) {
+        this.deliverConfirm(this.ids);
+      } else {
+        this.$message({
+          showClose: true,
+          message: "请先选择发货单",
+          type: "warning",
+        });
+      }
+    },
+    async deliverConfirm(arr){
+      this.$confirm("是否确定发货？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          const res = await deliverConfirm(arr);
+          if (res.code === "0") {
+            this.queryDeliverGoodsList();
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error',
+              duration: 1000
+            })
+          }
+        })
+        .catch(() => { });
+    },
+    handelSwitch(val){
+      this.readyArea.autoAllocate=val
+      this.$store.commit('autoAllocate',this.readyArea.autoAllocate);
+    },
+    async handelWarehouse(){
+      this.readyArea.areaCode=''
+      const data=await getFreeStockAreaList(this.warehouse)
+      if(data.code==='0'){
+        this.stockingArea=data.data
+      }
+    },
+    async handelDispatch(){
+      this.dispatch=true
+      const res=await queryEnumList('WarehouseCodeEnum')
+      if(res.code==='0'){
+        this.options=res.data
+        this.warehouseCode=res.data[0].key
+        this.queryDeliverGoodsTypeList();
+      }
+    },
+    async handelstockingArea(val){
+      this.$store.commit('setAreaCode',val)
+      const params={
+        warehouseCode:this.warehouse,
+        areaCode:val
+      }
+      const res=await getStockAreaColInfo(params)
+      if(res.code==='0'){
+        this.colOptions=res.data.map((v)=>{
+          return {
+            ...v,
+            label:`第${v.col}列`
+          }
+        })
+      }
+    },
+    handelList(val){ this.selectLeftList=val },
+    handelCountList(val){ this.selectLeftList=val },
+    handelColList(val){this.selectLeftList=val},
+    handelRight(val){ this.selectRightLIst=val },
+    handelCountChange(val){this.selectRightLIst=val },
+    handelChangeRight(val){this.selectRightLIst=val},
+    async handelConfirmDispatch(){
+      const params={
+        autoAllocate:this.readyArea.autoAllocate,
+        leftList:this.selectLeftList,
+        readyAreaCode:this.readyArea.areaCode,
+        rightList:this.selectRightLIst,
+        warehouseCode:this.warehouseCode,
+        readyAreaWarehouseCode:this.warehouse,
+      }
+      const res=await createDeliverGoods(params)
+      if(res.code==='0'){
+        this.add=false;
+        this.list=[];
+        this.$store.commit('setList',this.list);
+        this.readyArea.autoAllocate=true;
+        this.form={
+          mesNormsName:"",
+          mesCustomerShortName:"",
+          mesWheelType:"",
+          mesMeterLength:"",
+          total:0,
+        },
+        this.readyArea={
+          warehouseCode:"",
+          areaCode:"",
+          autoAllocate:true,
+        },
+        this.leftRightList = [];
+        this.queryDeliverGoodsList()
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      }else{
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
+      }
+    },
+    handleSelectionChangeDispatch(val){
+      this.list = val;
+    },
+    handelDispatchConfirm(){
+        this.$store.commit("setList",this.list)
+        this.$store.commit("setWarehouse",this.warehouse)
+        this.$store.commit("setWarehouseCode",this.warehouseCode)
+        if(this.list) {
+          this.form={
+            mesNormsName:this.list.mesNormsName,
+            mesCustomerShortName:this.list.mesCustomerShortName,
+            mesWheelType:this.list.mesWheelType,
+            mesMeterLength:this.list.mesMeterLength,
+          }
+          this.dispatch=false;
+        }else {
+          this.$message.error("请重新选择")
+        }
+    },
+    handelPageChange(val){
+      this.listQueryPage.pageNum=val.page
+      this.listQueryPage.pageSize=val.limit
+      this.queryDeliverGoodsTypeList()
+    },
+    async handelCreate(){
+      this.add=true;
+      const res=await queryEnumList('WarehouseCodeEnum')
+      if(res.code==='0'){
+        this.optionsWare=res.data
+        this.warehouse=res.data[0].key
+        const data=await getFreeStockAreaList(this.warehouse)
+        if(data.code==='0'){
+          this.stockingArea=data.data
+        }
+      }
+    },
+    handelWarehouseCode(val){
+      this.warehouseCode=val
+      this.queryDeliverGoodsTypeList()
+    },
+    async queryDeliverGoodsTypeList(){
+      const params={
+        keyWord:this.keyWord,
+        warehouseCode:this.warehouseCode,
+        page: this.listQueryPage.pageNum - 1,
+        size: this.listQueryPage.pageSize,
+      }
+      const res=await queryDeliverGoodsTypeList(params)
+      if(res.code==='0'){
+        this.productList=res.data.items
+        this.totalPage=res.data.total
+      }
+    },
+    async handelChange(){
+      this.queryDeliverGoodsTypeList()
+    },
     handelStockingArea(val) {
       this.obj = val
     },
@@ -650,8 +1127,6 @@ export default {
       this.drawer = false
     },
     async confirmTable() {
-      // this.leftList = JSON.parse(localStorage.getItem('leftList'))
-      // this.rightList = JSON.parse(localStorage.getItem('rightList'))
       if (this.leftList.length == this.tableHeader.planBoxCountLeft && this.rightList.length == this.tableHeader.planBoxCountRight) {
         const params = {
           deliverGoodsId: this.tableHeader.id,
@@ -690,6 +1165,17 @@ export default {
       if (res.code === '0') {
         this.selectData = res.data.items
         this.detailTotal = res.data.total
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     handelReplace() {
@@ -704,6 +1190,15 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
+      let arr = [], staus = [];
+      val.forEach((v) => {
+        arr.push(v.id);
+        if(v.statusEnum === '已发货'){
+          staus.push(v.id);
+        }
+      });
+      this.ids = [...new Set(arr)]
+      this.backIdS = [...new Set(staus)]
     },
     async deliverGoodsConfirm(arr) {
       const res = await deliverGoodsConfirm(arr);
@@ -729,6 +1224,17 @@ export default {
       const res = deliverGoodsDetailReport(arr)
       if (res.code === "0") {
         this.queryDeliverGoodsList();
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     handelClean() {
@@ -756,7 +1262,17 @@ export default {
         arr = []
         this.stock = false
         this.multipleSelection = []
-        // this.obj.stockingAreaCode = ""
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     async queryDeliverGoodsList() {
@@ -767,7 +1283,12 @@ export default {
       };
       const res = await queryDeliverGoodsList(params);
       if (res.code === "0") {
-        this.tableData = res.data.items;
+        this.tableData = res.data.items.map((v)=>{
+          return {
+            ...v,
+            count:v.completeNum+'/'+v.deliverBoxNum
+          }
+        });
         this.total = res.data.total;
       }
     },
@@ -796,7 +1317,7 @@ export default {
       this.wmsDeliverType = "";
       this.queryDeliverGoodsList();
     },
-    async handleDetail(index, row) {
+    handleDetail(index, row) {
       this.tableHeader = row;
       this.dialogVisible = true;
       this.queryDeliverGoodsDetailList(this.tableHeader.mainCode)
@@ -861,15 +1382,15 @@ export default {
       this.queryDeliverGoodsList();
     },
     handelExport() {
-      const arr = [];
+      let params={
+        titleNameList:[],
+        ...this.form,
+      }
       this.bindTableColumns &&
         this.bindTableColumns.length > 0 &&
         this.bindTableColumns.forEach((v) => {
-          arr.push(v.attr);
+          params.titleNameList.push(v.attr)
         });
-      const params = {
-        titleNameList: arr,
-      };
       exportBaseGoods(params).then((res) => {
         const blob = new Blob([res], { type: "application/vnd.ms-excel" });
         const fileName = "发货单列表.xlsx";
@@ -905,10 +1426,27 @@ export default {
     display: flex;
     justify-content: center;
     background-color: #fff;
-    margin-top: 20px;
-    // padding: 12px;
+    margin-top: 10px;
+    padding: 6px;
   }
 }
+// 修改 滚动条  拖拽
+::v-deep .el-table {
+  .el-table__fixed {
+    height: auto !important;
+    bottom: 17px !important;
+  }
+  .el-input--mini .el-input__inner{
+    width: 5.45rem;
+    font-size: 12px;
+  }
+  .el-table__fixed::before {
+    height: 0px;
+  } 
+}
+// ::v-deep .el-table__fixed::before {
+//   height: 0px;
+// } 
 ::v-deep .el-drawer__body {
   padding: 0 20px;
 }
@@ -922,4 +1460,5 @@ export default {
 ::v-deep .el-input--mini .el-input__inner {
   width: 180px;
 }
+
 </style>

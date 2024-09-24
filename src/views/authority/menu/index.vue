@@ -96,7 +96,7 @@
         <el-form-item
           v-if="title === '创建二级文件夹' || title === '创建三级文件夹'"
           label="上级目录"
-          prop="region"
+          prop="rootValue"
         >
           <el-select
             v-model="ruleForm.rootValue"
@@ -165,6 +165,24 @@
             placeholder="请输入排序数字"
           ></el-input>
         </el-form-item>
+        <el-form-item
+          v-if="name === '修改二级文件夹' || name === '修改三级文件夹'"
+          label="上级目录"
+          prop="rootValue"
+        >
+          <el-select
+            v-model="ruleForm.rootValue"
+            placeholder="请选择上级目录"
+            @change="handelChange"
+          >
+            <el-option
+              v-for="v in root"
+              :label="v.title"
+              :value="v.id"
+              :key="v.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="handelCancel">取 消</el-button>
@@ -215,6 +233,7 @@ export default {
       rules: {
         title: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
         sort: [{ required: true, message: "请输入排序数字", trigger: "blur" }],
+        rootValue: [{ required: true, message: "请选择上级目录", trigger: "blur" }],
       },
       parentId: "",
       loading: true,
@@ -277,6 +296,17 @@ export default {
         this.$refs.multipleTable_1.clearSelection();
         this.menuIdList = [];
         this.queryBindMenus();
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     handelCancel_1() {
@@ -355,6 +385,17 @@ export default {
         this.ruleForm = {};
         this.dialogVisible = false;
         this.dialogVisible_Edit = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'eroor',
+          duration: 1000
+        })
       }
     },
     async handelMenuCancel() {
@@ -368,6 +409,17 @@ export default {
       const res = await bindMenuToFolder(params)
       if (res.code === "0") {
         this.flag = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     handelCancel() {
@@ -380,18 +432,21 @@ export default {
     },
     handelEdit(data) {
       this.dialogVisible_Edit = true;
-      this.ruleForm = {
-        ...data,
-      };
       if (data.layer === 1) {
         this.name = "修改一级文件夹";
       } else if (data.layer === 2) {
         this.name = "修改二级文件夹";
+        this.layer=1
         this.queryFolderLayerList_1();
       } else {
         this.name = "修改三级文件夹";
+        this.layer=2
         this.queryFolderLayerList_1();
       }
+      this.ruleForm = {
+        ...data,
+        rootValue:data.parentId
+      };
     },
     handelEditConfirm() {
       switch (this.name) {
@@ -410,10 +465,25 @@ export default {
       }
     },
     async remove(node, data) {
-      this.$confirm("确认删除？").then(async (_) => {
+      this.$confirm("确定要取消吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(async () => {
         const res = await deleteFolder({ folderId: data.id });
         if (res.code === "0") {
+          this.$message({
+            message: res.msg,
+            type: 'success',
+            duration: 1000
+          })
           this.queryFolderLayerList();
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error',
+            duration: 1000
+          })
         }
       });
     },

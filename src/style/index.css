@@ -1,10 +1,16 @@
-*{
-    margin: 0;
-    padding: 0;
-    list-style: none;
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-html,body,#app{
-    height: 100%;
+html, body, #app {
+  height: 100%;
 }
 
+a {
+  text-decoration: none;
+}
+
+/* Chrome 滚动条优化 *//*# sourceMappingURL=index.css.map */

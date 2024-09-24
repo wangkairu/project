@@ -76,15 +76,30 @@
       </SearchFilter>
     </div>
     <div class="table">
-      <el-table :data="tableData" style="width: 100%" border>
-        <el-table-column prop="ip" label="Ip" width="130"> </el-table-column>
+      <el-table
+        :data="tableData"
+        style="width: 100%"
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+      >
+        <el-table-column fixed type="index" label="#"> </el-table-column>
+        <el-table-column prop="ip" label="Ip" width="140"> </el-table-column>
         <el-table-column prop="requestType" label="请求类型" width="100">
         </el-table-column>
-        <el-table-column prop="operateType" label="操作类型" width="100">
+        <el-table-column
+          prop="operateType"
+          label="操作类型"
+          width="100"
+          :show-overflow-tooltip="true"
+        >
         </el-table-column>
-        <el-table-column prop="logTypeEnum" label="日志类型" width="80">
+        <el-table-column prop="logTypeEnum" label="日志类型" width="100">
         </el-table-column>
-        <el-table-column prop="logContent" label="日志内容"> </el-table-column>
+        <el-table-column
+          prop="logContent"
+          label="日志内容"
+          :show-overflow-tooltip="true"
+        >
+        </el-table-column>
         <el-table-column prop="isSuccess" label="状态" width="80">
           <template slot-scope="scope">
             <el-tag v-if="scope.row.isSuccess === true" type="success">
@@ -93,7 +108,9 @@
             <el-tag v-else type="danger">失败</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="160">
+        <el-table-column prop="username" label="用户名">
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="180">
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100">
           <template slot-scope="scope">
@@ -174,6 +191,17 @@ export default {
       if (res.code === "0") {
         this.tableData = res.data.items;
         this.total = res.data.total;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     pageChange(val) {
@@ -222,7 +250,7 @@ export default {
     box-sizing: border-box;
     background-color: #fff;
     // border-radius: 10px;
-    padding: 15px;
+    padding: 10px 15px;
   }
   .table {
     box-sizing: border-box;
@@ -261,5 +289,8 @@ export default {
 }
 ::v-deep .el-drawer__body {
   padding: 0 16px;
+}
+::v-deep .el-table .el-table__cell{
+  padding: 0.54rem 0;
 }
 </style>

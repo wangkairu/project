@@ -6,7 +6,7 @@
       </el-scrollbar>
     </div>
     <div class="right" :class="{ extend: isCollapse }">
-      <div>
+      <div class="header">
         <headerComponents
           :isCollapse="isCollapse"
           @handelFold="handelFold"
@@ -40,9 +40,11 @@ export default {
 </script>
 
 
+
+
 <style lang="scss" scoped>
 .layout {
-  height: 100%;
+  height: 100vh;
   width: 100%;
   box-sizing: border-box;
   position: relative;
@@ -54,25 +56,30 @@ export default {
     left: 0;
     top: 0;
     bottom: 0;
-    transition: all 0.3s;
   }
   .right {
-    // flex: 1;
-    margin-left: 200px;
+    display: flex;
+    flex-direction: column;
+    margin-left: 240px;
     height: 100%;
-    transition: all 0.5s;
+    .header {
+      height: 50px;
+    }
+    .main {
+      padding: 15px 10px;
+      background-color: rgba(240, 242, 245, 1);
+      flex: 1;
+    }
   }
+
   .extend {
     margin-left: 64px;
     transition: all 0.1s;
-  }
-  .main {
-    // height: calc(100% - 50px - 30px);
-    padding: 15px 10px;
-    background-color: rgba(240, 242, 245, 1);
   }
 }
 ::v-deep .el-scrollbar__wrap {
   overflow-x: hidden;
 }
 </style>
+
+

@@ -56,11 +56,11 @@
           ></el-form-item
         >
         <!-- icon="el-icon-search" -->
-        <el-form-item
+        <!-- <el-form-item
           ><el-button type="primary" @click="searchClick" size="mini"
             >导出数据</el-button
           ></el-form-item
-        >
+        > -->
       </el-form>
     </div>
     <div class="table">
@@ -154,7 +154,7 @@ export default {
     };
   },
   methods: {
-    searchClick() {},
+    // searchClick() {},
     tableCellStyle({ row, column, rowIndex, columnIndex }) {
       // 渐变放在当前值
       if (columnIndex > 9) {

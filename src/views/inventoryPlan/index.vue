@@ -2,7 +2,7 @@
   <div class="warpper">
     <div class="table-filter">
       <SearchFilter
-        :labelWidth="'120px'"
+        :labelWidth="'110px'"
         size="mini"
         :maxShow="5"
         @search="search"
@@ -33,24 +33,28 @@
           </el-select>
         </el-form-item>
         <el-form-item label="盘点创建时间">
-          <el-date-picker
-            size="mini"
-            v-model="form.createTimeStart"
-            type="date"
-            placeholder="开始时间"
-            @change="handelCreateTimeStart"
-          >
-          </el-date-picker>
+          <div class="time">
+            <el-date-picker
+              size="mini"
+              v-model="form.createTimeStart"
+              type="date"
+              placeholder="开始时间"
+              @change="handelCreateTimeStart"
+            >
+            </el-date-picker>
+          </div>
         </el-form-item>
         <el-form-item label="盘点结束时间">
-          <el-date-picker
-            size="mini"
-            v-model="form.createTimeEnd"
-            type="date"
-            placeholder="结束时间"
-            @change="handelCreateTimeEnd"
-          >
-          </el-date-picker>
+          <div class="time">
+            <el-date-picker
+              size="mini"
+              v-model="form.createTimeEnd"
+              type="date"
+              placeholder="结束时间"
+              @change="handelCreateTimeEnd"
+            >
+            </el-date-picker>
+          </div>
         </el-form-item>
       </SearchFilter>
     </div>
@@ -64,9 +68,8 @@
         >
       </div>
       <el-table
-        v-loading="loading"
-        height="480"
-        border
+        height="500"
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         style="width: 100%"
         :data="data"
         @selection-change="handleSelectionChange"
@@ -74,12 +77,12 @@
         <el-table-column
           :selectable="checkSelectable"
           type="selection"
-          width="55"
+          width="70"
         >
         </el-table-column>
-        <el-table-column prop="id" label="ID" width="60"> </el-table-column>
-        <el-table-column prop="name" label="盘点单"> </el-table-column>
-        <el-table-column prop="statusEnum" label="状态" width="100">
+        <el-table-column fixed type="index" label="#" > </el-table-column>
+        <el-table-column prop="name" label="盘点单" > </el-table-column>
+        <el-table-column prop="statusEnum" label="状态" >
           <template slot-scope="scope">
             <el-tag v-if="scope.row.statusEnum === '未开始'">{{
               scope.row.statusEnum
@@ -92,12 +95,18 @@
             <el-tag v-else type="info">{{ scope.row.statusEnum }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间"> </el-table-column>
-        <el-table-column prop="checkPlanUser" label="盘点人名称" width="100">
+        <el-table-column prop="createTime" label="创建时间" > </el-table-column>
+        <el-table-column prop="checkPlanUser" label="盘点人名称" >
         </el-table-column>
         <el-table-column prop="finishedTime" label="完成时间">
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column
+          prop="remark"
+          label="备注"
+          width="160"
+        >
+        </el-table-column>
+        <el-table-column label="操作" width="160">
           <template slot-scope="scope">
             <el-button
               type="text"
@@ -124,41 +133,34 @@
       />
     </div>
     <el-dialog title="明细表" :visible.sync="dialogVisible" width="90%">
-      <div class="header">
-        <el-row>
-          <el-col>
-            <ul>
-              <span>盘点单主表编号：</span>
-              <span>{{ tableHeader.code }}</span>
-            </ul>
-          </el-col>
-        </el-row>
-        <el-row class="row">
-          <el-col :span="12">
-            <ul>
-              <span>盘点人：</span>
-              <span>{{ tableHeader.checkPlanUser }}</span>
-            </ul>
-          </el-col>
-          <el-col :span="12">
-            <ul>
-              <span>盘点单创建时间：</span>
-              <span>{{ tableHeader.createTime }}</span>
-            </ul>
-          </el-col>
-        </el-row>
-      </div>
-      <el-table border :data="detail" style="width: 100%; margin-top: 30px">
-        <el-table-column prop="index" label="序号" width="50" fixed>
-        </el-table-column>
+      <el-descriptions class="margin-top" :column="3">
+        <el-descriptions-item label="盘点单主表编号">
+          <descriptionsTooltip :value="tableHeader.code"></descriptionsTooltip>
+        </el-descriptions-item>
+        <el-descriptions-item label="盘点人">{{
+          tableHeader.checkPlanUser
+        }}</el-descriptions-item>
+        <el-descriptions-item label="盘点单创建时间">{{
+          tableHeader.createTime
+        }}</el-descriptions-item>
+        <el-descriptions-item label="备注">
+          {{ tableHeader.remark ? tableHeader.remark : "无" }}
+        </el-descriptions-item>
+      </el-descriptions>
+      <el-table
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+        :data="detail"
+        style="width: 100%; margin-top: 30px"
+      >
+        <el-table-column fixed type="index" label="#"> </el-table-column>
         <el-table-column prop="customerShortName" label="客户简称" width="120">
         </el-table-column>
-        <el-table-column prop="mesNormsName" label="MES规格名称">
+        <el-table-column prop="mesNormsName" label="MES规格名称" width="70">
         </el-table-column>
         <el-table-column prop="mesWheelType" label="MES轮型"> </el-table-column>
         <el-table-column prop="mesMeterLength" label="MES米长">
         </el-table-column>
-        <el-table-column prop="mesLeftRightSides" label="MES左右面">
+        <el-table-column prop="mesLeftRightSides" label="MES左右面" width="70">
         </el-table-column>
         <el-table-column prop="mesTray" label="托盘"></el-table-column>
         <el-table-column prop="checkPlanCount" label="盘点箱数">
@@ -174,27 +176,47 @@
         </el-table-column>
         <el-table-column prop="checkPlanProfit" label="盘盈数量">
         </el-table-column>
-        <el-table-column prop="functionAreaCode" label="功能类型下的分区编号">
+        <el-table-column prop="functionAreaCode" label="区域编号">
         </el-table-column>
-        <el-table-column prop="functionCode" label="功能类型编号">
+        <el-table-column prop="colIndexAlias" label="库列编号">
+        </el-table-column>
+        <!-- <el-table-column prop="functionCode" label="功能类型编号">
         </el-table-column>
         <el-table-column prop="functionTypeEnum" label="功能类型">
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="statusEnum" label="是否完成">
           <template slot-scope="scope">
-            <el-input
+            <!-- <el-select v-if="scope.row.flag" v-model="scope.row.status" placeholder="请选择">
+              <el-option
+                v-for="item in newArr"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+              </el-option>
+            </el-select> -->
+            <!-- <el-input
               v-if="scope.row.flag"
               v-model="scope.row.statusEnum"
-            ></el-input>
-            <div v-else>{{ scope.row.statusEnum }}</div>
+            ></el-input> -->
+            <div>{{ scope.row.statusEnum }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="checkPlanFinishedTime" label="盘点完成时间">
+        <el-table-column
+          prop="checkPlanFinishedTime"
+          label="盘点完成时间"
+          width="160"
+        >
+        </el-table-column>
+        <el-table-column
+          prop="remark"
+          label="备注"
+          width="160"
+        >
         </el-table-column>
         <el-table-column label="操作" width="100">
           <template slot-scope="scope">
             <el-button
-              v-if="!scope.row.status"
+              v-if="!scope.row.status&&!scope.row.flag"
               type="text"
               class="edit-btn"
               size="mini"
@@ -206,15 +228,15 @@
               type="text"
               class="edit-btn"
               size="mini"
-              @click="saveRow(scope.row)"
-              >保存</el-button
+              @click="cancelEdit(scope.row)"
+              >取消</el-button
             >
           </template>
         </el-table-column>
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
+        <el-button type="primary"   @click="saveRow()" 
           >确 定</el-button
         >
       </span>
@@ -223,9 +245,19 @@
       <el-form
         ref="numberValidateForm"
         :model="obj"
-        label-width="110px"
+        label-width="120px"
         size="mini"
       >
+        <el-form-item label="分厂">
+          <el-select v-model="obj.shop"  placeholder="请选择分厂">
+            <el-option
+              v-for="item in options1"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="盘点人">
           <el-select
             v-model="obj.userName"
@@ -235,7 +267,6 @@
             reserve-keyword
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
-            :loading="loading_1"
             @focus="repeatList"
             @change="handleSelectBranchCom"
           >
@@ -254,6 +285,27 @@
             placeholder="请输入盘点计划名称"
           ></el-input>
         </el-form-item>
+        <el-form-item
+          label="库房编号"
+          :rules="{
+            required: true,
+            message: '请选择库房编号',
+          }"
+        >
+          <el-select
+            v-model="obj.WareHouse"
+            placeholder="请选择库房编号"
+            @change="handelChangeWareHouse($event)"
+          >
+            <el-option
+              v-for="item in WareHouseOptions"
+              :key="item.value"
+              :label="item.value"
+              :value="item.key"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="盘点计划集合">
           <div class="background">
             <div
@@ -261,30 +313,8 @@
               v-for="(v, ind) in obj.checkPlanList"
               :key="ind"
             >
-              <el-form-item
-                :prop="`checkPlanList[${ind}].WareHouse`"
-                label="库房编号"
-                style="margin-top: 8px"
-                :rules="{
-                  required: true,
-                  message: '请选择库房编号',
-                }"
-              >
-                <el-select
-                  v-model="v.WareHouse"
-                  placeholder="请选择库房编号"
-                  @change="handelChangeWareHouse"
-                >
-                  <el-option
-                    v-for="item in WareHouseOptions"
-                    :key="item.value"
-                    :label="item.value"
-                    :value="item.key"
-                  >
-                  </el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item
+           
+              <!-- <el-form-item
                 :prop="`checkPlanList[${ind}].functionType`"
                 label="功能区类型"
                 style="margin-top: 8px"
@@ -329,19 +359,18 @@
                   >
                   </el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item
-                :prop="`checkPlanList[${ind}].functionAreaCode`"
-                label="功能类型编号"
+                label="区域编号"
                 style="margin-top: 8px"
                 :rules="{
                   required: true,
-                  message: '请选择功能类型编号',
+                  message: '请选择区域编号',
                 }"
               >
                 <el-select
                   v-model="v.functionAreaCode"
-                  placeholder="请选择功能类型编号"
+                  placeholder="请选择区域编号"
                   @change="handelfunctionAreaCode"
                 >
                   <el-option
@@ -354,17 +383,16 @@
                 </el-select>
               </el-form-item>
               <el-form-item
-                :prop="`checkPlanList[${ind}].colIndexAlias`"
-                label="功能类型编号"
+                label="库列编号"
                 style="margin-top: 8px"
                 :rules="{
                   required: true,
-                  message: '请选择功能类型编号',
+                  message: '请选择库列编号',
                 }"
               >
                 <el-select
                   v-model="v.colIndexAlias"
-                  placeholder="请选择功能类型编号"
+                  placeholder="请选择库列编号"
                   @change="handelcolIndexAlias($event, ind)"
                 >
                   <el-option
@@ -388,10 +416,19 @@
             >
           </div>
         </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            type="textarea"
+            maxlength="500"
+            show-word-limit
+            placeholder="请输入备注"
+            v-model="obj.remark">
+          </el-input>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="handelCancel">取 消</el-button>
-        <el-button type="primary" @click="handelConfirm">确 定</el-button>
+        <el-button @click="handelCancel('numberValidateForm')">取 消</el-button>
+        <el-button type="primary" @click="handelConfirm('numberValidateForm')">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -407,12 +444,13 @@ import {
   checkPlanDelete,
   sysUserGetUserList,
 } from "@/api/inventoryPlan";
+import descriptionsTooltip from '@/components/Descriptions'
 import { queryWarehouseColDropDown } from "@/api/location";
 import SearchFilter from "@/components/SearchFilter";
 import moment from "moment";
 export default {
   name: "InventoryPlan",
-  components: { PageNation, SearchFilter },
+  components: { PageNation, SearchFilter, descriptionsTooltip },
   data() {
     return {
       showBtn: false,
@@ -432,7 +470,6 @@ export default {
       ],
       data: [],
       loading: true,
-      loading_1: true,
       dialogVisible: false,
       dialogVisible_1: false,
       total: 0,
@@ -451,14 +488,19 @@ export default {
         name: "",
         userName: "",
         workNo: "",
+        shop:"四期",
+        shopCode:'D',
+        WareHouse: "",
+        remark:"",
         checkPlanList: [
           {
-            WareHouse: "",
+            warehouseName:"",
+            WareHouse:"",
             areaCode: "",
             colIndexAlias: "",
             functionAreaCode: "",
-            functionCode: "",
-            functionType: "",
+            functionCode: "IN",
+            functionType: "IN",
           },
         ],
       },
@@ -478,8 +520,13 @@ export default {
       mainCode: "",
       userInfo: { userName: "", workNo: "" },
       options: [],
+      options1:[{label:"四期",value:'四期'}],
+      newArr:[{value:"是",key:1},{value:"否",key:0}],
       value: "",
       arr: [],
+      newData:[],
+      checkPlanCount:"",
+      inventoryObj:"",
     };
   },
   mounted() {
@@ -491,26 +538,16 @@ export default {
     this.queryCheckPlanList();
   },
   methods: {
-    // handelUnfold(ind) {
-    //   console.log(ind);
-    //   this.obj.checkPlanList.forEach((v, index) => {
-    //     if (index === ind) {
-    //       v.flag = !v.flag;
-    //     }
-    //   });
-    // },
     async remoteMethod(keyWord) {
       if (keyWord !== "") {
         const params = {
           keyWord,
         };
         const res = await sysUserGetUserList(params);
-        console.log(res, "res");
         if (res.code === "0") {
           this.options = res.data.filter((v) => {
             return v.showValue.includes(keyWord);
           });
-          this.loading_1 = false;
         }
       } else {
         this.options = [];
@@ -566,6 +603,17 @@ export default {
         this.loading = false;
         this.data = res.data.items;
         this.total = res.data.total;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     async queryCheckPlanDetailList(mainCode) {
@@ -576,8 +624,10 @@ export default {
             ...v,
             flag: false,
             index: index + 1,
+            checkPlanCount:v.checkPlanCount?v.checkPlanCount:0,
           };
         });
+        this.newData=res.data;
       }
     },
     handleDetail(index, row) {
@@ -598,13 +648,25 @@ export default {
         this.WareHouseOptions = res.data;
       }
     },
-    async handelChangeWareHouse(val) {
+    async handelChangeWareHouse(val,ind) {
       if (val) {
+        this.obj.checkPlanList.forEach((v)=>{
+          v.colIndexAlias='',
+          v.functionAreaCode=''
+          v.WareHouse=val
+          v.warehouseName=val==='WAREHOUSE-D-WEST'?'4期西库':'4期东库'
+        })
         this.WareHouse = val;
-        const params = { warehouseCode: this.WareHouse };
+        this.functionType ='IN'
+        this.functionCode='IN'
+        const params = {
+          warehouseCode: this.WareHouse,
+          functionType: this.functionType,
+          functionCode: this.functionCode,
+        };
         const res = await queryWarehouseColDropDown(params);
         if (res.code === "0") {
-          this.functionTypeOptions = res.data;
+          this.functionAreaCodeOptions = res.data;
         }
       }
     },
@@ -624,7 +686,7 @@ export default {
         const params = {
           warehouseCode: this.WareHouse,
           functionType: this.functionType,
-          functionCode: val,
+          functionCode: this.functionCode,
         };
         const res = await queryWarehouseColDropDown(params);
         if (res.code === "0") {
@@ -665,15 +727,23 @@ export default {
     handelAddItem(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          let val='',newVal=''
+          this.obj.checkPlanList.forEach((v)=>{
+            if(v.WareHouse){
+              val = v.WareHouse
+              newVal = v.warehouseName
+            }
+          })
           this.obj.checkPlanList.push({
+            warehouseName:newVal,
+            WareHouse:val,
             areaCode: "",
             colIndexAlias: "",
             functionAreaCode: "",
-            functionCode: "",
-            functionType: "",
+            functionCode: "IN",
+            functionType: "IN",
           });
         } else {
-          console.log("error submit!!");
           return false;
         }
       });
@@ -686,22 +756,28 @@ export default {
         }
       });
     },
-    handelCancel() {
+    handelCancel(formName) {
       this.dialogVisible_1 = false;
-      this.obj = {
+      this.obj={
         name: "",
         userName: "",
         workNo: "",
+        shop:"四期",
+        shopCode:'D',
+        WareHouse: "",
         checkPlanList: [
           {
+            warehouseName:"",
+            WareHouse:"",
             areaCode: "",
             colIndexAlias: "",
             functionAreaCode: "",
-            functionCode: "",
-            functionType: "",
+            functionCode: "IN",
+            functionType: "IN",
           },
         ],
-      };
+      }
+      this.$refs[formName].resetFields();
     },
     async handelConfirm() {
       const params = {
@@ -710,63 +786,155 @@ export default {
       const res = await createCheckPlan(params);
       if (res.code === "0") {
         this.queryCheckPlanList();
+        this.obj={
+          name: "",
+          userName: "",
+          workNo: "",
+          shop:"四期",
+          shopCode:'D',
+          WareHouse: "",
+          checkPlanList: [
+            {
+              warehouseName:"",
+              WareHouse:"",
+              areaCode: "",
+              colIndexAlias: "",
+              functionAreaCode: "",
+              functionCode: "IN",
+              functionType: "IN",
+            },
+          ],
+        },
+        // this.$refs[formName].resetFields();
         this.dialogVisible_1 = false;
+        this.$message({
+          message: res.msg,
+          type: 'success',
+          duration: 1000
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
       }
     },
     // 批量删除 选择 盘点单
     handleSelectionChange(val) {
+      let arr = []
       val.forEach((v) => {
-        this.multipleSelection.push(v.id);
+        arr.push(v.id);
       });
+      this.multipleSelection = [...new Set(arr)]
     },
     checkSelectable(row) {
       return row.status === 0;
     },
     // 单个删除
     async handleDelete(index, row) {
-      const res = await checkPlanDelete([row.id]);
-      if (res.code === "0") {
-        this.queryCheckPlanList();
-      }
+      this.$confirm("确定要取消吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(async () => {
+        const res = await checkPlanDelete([row.id]);
+        if (res.code === "0") {
+          this.queryCheckPlanList();
+          this.$message({
+            message: res.msg,
+            type: 'success',
+            duration: 1000
+          })
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error',
+            duration: 1000
+          })
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
     },
-    async handelBatchDelate() {
-      const res = await checkPlanDelete(this.multipleSelection);
-      if (res.code === "0") {
-        this.queryCheckPlanList();
+    handelBatchDelate() {
+      if (this.multipleSelection && this.multipleSelection.length > 0) {
+        this.$confirm("确定要取消吗？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(async () => {
+          const res = await checkPlanDelete(this.multipleSelection);
+          if (res.code === "0") {
+            this.queryCheckPlanList();
+            this.$message({
+              message: res.msg,
+              type: 'success',
+              duration: 1000
+            })
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error',
+              duration: 1000
+            })
+          }
+        }).catch((err) => {
+          console.log(err)
+        })
+      } else {
+        this.$message({
+          showClose: true,
+          message: "未选择数据",
+          type: "warning",
+        });
       }
+
     },
     // 编辑明细表
     async editRow(row) {
       this.$set(row, "flag", true);
+      this.inventoryObj=row
     },
-    async saveRow(row) {
-      let params = {};
-      this.detail.forEach((v) => {
-        if (
-          v.checkPlanCount !== row.checkPlanCount &&
-          v.statusEnum === row.statusEnum
-        ) {
-          params = {
-            checkPlanCount: row.checkPlanCount,
-            id: row.id,
-            ...this.userInfo,
-          };
-        } else if (
-          v.checkPlanCount === row.checkPlanCount &&
-          v.statusEnum !== row.statusEnum
-        ) {
-          params = {
-            status: row.statusEnum === "是" ? 1 : 0,
-            id: row.id,
-            ...this.userInfo,
-          };
+    async saveRow() {
+      if(this.inventoryObj.flag){
+        let params = {
+          checkPlanCount: this.inventoryObj.checkPlanCount,
+          status: this.inventoryObj.status,
+          id: this.inventoryObj.id,
+          ...this.userInfo,
+        };
+        const res = await editCheckPlanDetail(params);
+        if (res.code === "0") {
+          this.$message({
+            message: res.msg,
+            type: 'success',
+            // duration: 1000
+          })
+          this.dialogVisible = false
+          this.queryCheckPlanList();
+        }else{
+          this.$message({
+            message: res.msg,
+            type: 'error',
+            // duration: 1000
+          })
         }
-      });
-      const res = await editCheckPlanDetail(params);
-      if (res.code === "0") {
-        this.queryCheckPlanDetailList(this.mainCode);
+      }else{
+        this.$message.error('请先编辑盘点箱数和盘点状态')
       }
+      
     },
+    cancelEdit(row){
+      row.flag=false
+      this.inventoryObj=row
+      this.newData.forEach((v)=>{
+        if(v.id==row.id){
+          row.checkPlanCount=v.checkPlanCount
+          row.statusEnum=v.statusEnum
+        }
+      })
+    }
   },
 };
 </script>
@@ -801,8 +969,8 @@ export default {
     display: flex;
     justify-content: center;
     background-color: #fff;
-    margin-top: 20px;
-    padding: 12px;
+    margin-top: 10px;
+    padding: 6px;
   }
   .background {
     background: #f5f5f5;
@@ -814,27 +982,6 @@ export default {
       background: #f0f0f0;
       border-radius: 10px;
       position: relative;
-      // .fold {
-      //   .btn {
-      //     width: 100%;
-      //     position: absolute;
-      //     bottom: -18px;
-      //     left: 50%;
-      //     z-index: 999;
-      //   }
-      // }
-      // .packUp {
-      //   height: 50px;
-      //   overflow: hidden;
-      //   padding: 0 10px;
-      //   .btn {
-      //     width: 100%;
-      //     position: absolute;
-      //     bottom: -18px;
-      //     left: 50%;
-      //     z-index: 999;
-      //   }
-      // }
     }
     .iconfont {
       position: absolute;
@@ -844,10 +991,35 @@ export default {
     }
   }
 }
+ul {
+  display: flex;
+}
+.hiden {
+  display: inline-block;
+  width: calc(100% - 112px);
+  // overflow: hidden;
+}
+::v-deep .el-descriptions__body .el-descriptions__table {
+  white-space: nowrap !important;
+}
+::v-deep .el-descriptions-item__content {
+  width: 300px;
+}
+::v-deep span.el-tooltip {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 4px !important;
+}
 ::v-deep .el-form-item {
   margin-bottom: 12px;
 }
 ::v-deep .el-input--mini .el-input__inner {
   width: 180px;
+}
+.time {
+  ::v-deep .el-input__suffix {
+    right: 2.6125rem;
+  }
 }
 </style>

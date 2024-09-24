@@ -52,27 +52,43 @@
     </div>
     <div class="table">
       <div class="enteringButton">
-        <el-button type="primary" @click="searchClick" size="mini"
+        <!-- <el-button type="primary" @click="searchClick" size="mini"
           >导出Excel</el-button
-        >
+        > -->
         <el-button type="primary" @click="addClick" size="mini">新增</el-button>
       </div>
-      <el-table border style="width: 100%" :data="tableData">
-        <el-table-column fixed prop="id" label="#" width="45"></el-table-column>
-        <el-table-column fixed prop="deptCode" label="部门编号" width="90">
+      <el-table
+        :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
+        style="width: 100%"
+        :data="tableData"
+        height="626"
+      >
+        <el-table-column fixed type="index" label="#"> </el-table-column>
+        <el-table-column fixed prop="shop" label="分厂" width="120">
         </el-table-column>
-        <!-- <el-table-column fixed prop="deptName" label="部门名称" width="90">
+        <el-table-column fixed prop="shopCode" label="分厂编号" width="120">
+        </el-table-column>
+        <!-- <el-table-column fixed prop="roleName" label="角色" width="160">
         </el-table-column> -->
+        <el-table-column fixed prop="deptName" label="部门名称" width="230">
+        </el-table-column>
         <el-table-column fixed prop="workNo" label="工号" width="90">
         </el-table-column>
         <el-table-column fixed prop="username" label="姓名"> </el-table-column>
-        <el-table-column prop="userIdentity" label="身份"> </el-table-column>
+        <el-table-column prop="userIdentity" label="身份">
+          <template slot-scope="scope">
+            <span>{{scope.row.sex===1?'普通成员':'上级'}}</span>
+          </template> </el-table-column>
         <el-table-column prop="classes" label="班次" width="60">
         </el-table-column>
-        <el-table-column prop="sex" label="性别" width="60"> </el-table-column>
+        <el-table-column prop="sex" label="性别" width="60"> 
+          <template slot-scope="scope">
+            <span>{{scope.row.sex===1?'男':'女'}}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="age" label="年龄" width="55"> </el-table-column>
-        <el-table-column prop="phone" label="电话"> </el-table-column>
-        <el-table-column prop="email" label="邮箱"> </el-table-column>
+        <el-table-column prop="phone" label="电话" width="130"> </el-table-column>
+        <el-table-column prop="email" label="邮箱" width="130"> </el-table-column>
         <el-table-column label="状态" width="70">
           <template slot-scope="scope">
             <el-switch
@@ -91,12 +107,8 @@
               trigger="click"
               :ref="`popover-${scope.$index}`"
             >
-              <el-input
-                v-if="flag"
-                type="password"
-                size="mini"
-                v-model="userPass"
-                ><svg-icon slot="suffix" icon-class="Eyes-closed" />
+              <el-input show-password type="password" size="mini" v-model="userPass">
+                <!-- <svg-icon slot="suffix" icon-class="Eyes-closed" /> -->
               </el-input>
               <el-button
                 style="margin-left: 3px; margin-top: 8px"
@@ -112,7 +124,6 @@
                 >取消
               </el-button>
               <el-button
-                @click="changeRole(scope.row)"
                 slot="reference"
                 size="mini"
                 type="text"
@@ -131,8 +142,8 @@
               type="text"
               class="edit-btn"
               size="mini"
-              @click="$emit('delRow', scope.row)"
-              >删除</el-button
+              @click="handelBind(scope.row)"
+              >绑定角色</el-button
             >
           </template>
         </el-table-column>
@@ -143,9 +154,19 @@
         :model="userForm"
         :rules="rules"
         ref="userForm"
-        label-width="110px"
+        label-width="120px"
         class="demo-ruleForm"
       >
+        <el-form-item size="mini" label="分厂" prop="workNo">
+          <el-select v-model="userForm.shop" placeholder="请选择分厂">
+            <el-option
+              v-for="item in shop"
+              :key="item.value"
+              :label="item.label"
+              :value="item.label">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="工号" prop="workNo">
           <el-input
             v-model="userForm.workNo"
@@ -202,6 +223,41 @@
         >
       </span>
     </el-dialog>
+    <el-dialog title="绑定角色" :visible.sync="roleFlag" width="45%">
+      <el-table
+        @selection-change="handleSelectionChange"
+        :data="roleData"
+        border
+        ref="roleList"
+        width="100%"
+      >
+        <el-table-column type="selection"  width="45"> </el-table-column>
+        <el-table-column prop="id" label="ID" width="40"> </el-table-column>
+        <el-table-column prop="roleName" label="角色名称">
+          <template slot-scope="scope">
+            <el-input
+              v-if="scope.row.isEdit"
+              v-model="scope.row.roleName"
+            ></el-input>
+            <div v-else>{{ scope.row.roleName }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" label="备注"> </el-table-column>
+      </el-table>
+      <div style="text-align: center;margin-top: 10px;">
+        <PageNation
+          v-show="roleTotal > 0"
+          :total="roleTotal"
+          :page.sync="listRoleQuery.pageNum"
+          :limit.sync="listRoleQuery.pageSize"
+          @pagination="pageChangeRole"
+        />
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="roleFlag = false">取 消</el-button>
+        <el-button type="primary" @click="bindRole()">确 定</el-button>
+      </span>
+    </el-dialog>
     <div class="pagenation">
       <PageNation
         v-show="total > 0"
@@ -217,7 +273,7 @@
 <script>
 import PageNation from "@/components/Pagination";
 import SearchFilter from "@/components/SearchFilter";
-import { queryUserList, changeUserStatus, saveOrUpdateUser } from "@/api";
+import { queryUserList, changeUserStatus, saveOrUpdateUser,bindRole,editUserPassword,queryRoleList,queryBindRole} from "@/api";
 export default {
   name: "modifyClient",
   components: { PageNation, SearchFilter },
@@ -228,15 +284,10 @@ export default {
       value1: "",
       userPass: "",
       tableData: [],
+      shop:[{ value: 'D',label: "四期",},],
       options: [
-        {
-          value: 1,
-          label: "正常",
-        },
-        {
-          value: 2,
-          label: "冻结",
-        },
+        { value: 1,label: "正常",},
+        { value: 2,label: "冻结",},
       ],
       form: {
         deptCode: "",
@@ -246,6 +297,7 @@ export default {
       },
       dialogVisible: false,
       flag: false,
+      roleFlag:false,
       request: {},
       userForm: {
         workNo: "",
@@ -256,6 +308,8 @@ export default {
         sex: "",
         deptCode: "",
         username: "",
+        shop:"",
+        shopCode:"D"
       },
       rules: {
         username: [
@@ -278,10 +332,87 @@ export default {
         pageNum: 1,
         pageSize: 10,
       },
+      roleTotal:0,
+      listRoleQuery: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+      roleData:[],
+      roleIdList:[],
+      userId:"",
     };
   },
 
   methods: {
+    handleSelectionChange(select){
+      this.roleIdList=select.map((v)=>{
+        return v.id
+      })
+    },
+    handleUserRoleClose(){
+      this.userPass=''
+    },
+    async changeUserRole(v){
+      const params={
+        id: 0,
+        password: this.userPass,
+        userId: v.id,
+      }
+      const res = await editUserPassword(params)
+      if(res.code=='0'){
+        this.userPass=''     
+        this.$message.success(res.msg)
+        this.queryUserList();
+      }else{
+        this.$message.error(res.msg)
+      }
+    },
+    async handelBind(row){
+      this.roleFlag = true
+      this.userId=row.id
+      this.queryRoleList()
+    },
+    async queryBindRole(){
+      const res = await queryBindRole(this.userId)
+      if(res.code=='0'){
+        res.data.forEach((i)=>{
+          this.roleData.forEach((v)=>{
+            if(i.roleId==v.id){
+              this.$nextTick(()=>{
+                this.$refs.roleList.toggleRowSelection(v,true)
+              })
+            }
+          })
+        })
+      }
+    },
+    async queryRoleList() {
+      const res = await queryRoleList({
+        page: this.listRoleQuery.pageNum - 1,
+        size: this.listRoleQuery.pageSize,
+      });
+      if (res.code === "0") {
+        this.roleData = res.data.items;
+        this.roleTotal = res.data.total;
+        this.queryBindRole()
+      }
+    },
+    async bindRole(){
+      const params={
+        id: 0,
+        roleIdList: this.roleIdList,
+        userId: this.userId,
+      }
+      const res = await bindRole(params)
+      if(res.code === "0"){
+        this.roleFlag=false
+        this.roleIdList=[]
+        this.$message.success(res.msg)
+        this.queryUserList();
+      }else{
+        this.$message.error(res.msg)
+      }
+    },
     reset() {
       this.form = {};
       this.queryUserList();
@@ -303,7 +434,7 @@ export default {
       this.queryUserList();
     },
     // 修改密码
-    changeRole() {},
+    changeRole() { },
     async handelChange(val) {
       await changeUserStatus(val.id);
     },
@@ -314,20 +445,33 @@ export default {
         size: this.listQuery.pageSize,
       };
       const res = await queryUserList(params);
-      this.total = res.data.total;
-      this.tableData = res.data.items.map((v) => {
-        return {
-          ...v,
-          status: v.status === 1 ? true : false,
-        };
-      });
+      if (res.code === '0') {
+        this.total = res.data.total;
+        this.tableData = res.data.items.map((v) => {
+          return {
+            ...v,
+            status: v.status === 1 ? true : false,
+          };
+        });
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error',
+          duration: 1000
+        })
+      }
+
     },
     pageChange(val) {
       this.listQuery.pageNum = val.page;
       this.listQuery.pageSize = val.limit;
       this.queryUserList();
     },
-
+    pageChangeRole(val){
+      this.listRoleQuery.pageNum = val.page;
+      this.listRoleQuery.pageSize = val.limit;
+      this.queryRoleList()
+    },
     search(payload) {
       //重置当前页数为1
       this.query.page = 1;
@@ -358,6 +502,17 @@ export default {
         if (res.code === "0") {
           this.queryUserList();
           this.dialogVisible = false;
+          this.$message({
+            message: res.msg,
+            type: 'success',
+            duration: 1000
+          })
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error',
+            duration: 1000
+          })
         }
       } else {
         const res = await saveOrUpdateUser({
@@ -369,6 +524,17 @@ export default {
         if (res.code === "0") {
           this.queryUserList();
           this.dialogVisible = false;
+          this.$message({
+            message: res.msg,
+            type: 'success',
+            duration: 1000
+          })
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error',
+            duration: 1000
+          })
         }
       }
       this.userForm = {
@@ -402,7 +568,6 @@ export default {
   },
   mounted() {
     const data = JSON.parse(localStorage.getItem("data"));
-    console.log(data.deptCode, "deptCode");
     this.request = {
       deptCode: data.deptCode,
       status: 1,
