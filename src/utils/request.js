@@ -16,7 +16,7 @@ const service = axios.create({
   // 192.168.1.110:9096
   // 192.168.1.106   192.168.2.155/156/159 http://192.168.110.41:9096
   // 192.168.2.21  192.168.2.24
-  baseURL:process.env.NODE_ENV === 'development' ? 'http://192.168.110.35:9096' : url
+  baseURL:process.env.NODE_ENV === 'development' ? 'http://192.168.110.60:9096' : url
   // baseURL: url,
   // withCredentials: true, // send cookies when cross-domain requests
   // timeout: 5000 // request timeout

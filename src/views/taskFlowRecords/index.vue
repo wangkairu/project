@@ -9,9 +9,10 @@
             @search="search"
             @reset="reset"
           >
-          <el-form-item label="MES箱号二维码">
+            <el-form-item label="MES箱号二维码">
               <el-input
                 size="mini"
+                
                 v-model="form.mesBoxNumberQrCode"
                 @change="handelMesBoxNumberQrCode"
                 placeholder="请输入MES箱号二维码"
@@ -20,21 +21,23 @@
             <el-form-item label="MES生产编号">
               <el-input
                 size="mini"
+                
                 v-model="form.mesProductionNo"
                 placeholder="请输入MES生产编号"
-                @change="handelMesProductionNo"
+                @change="handelMesBoxNumberQrCode"
               ></el-input>
             </el-form-item>
-            <el-form-item label="MES规格代码">
+            <!-- <el-form-item label="MES规格代码">
               <el-input
                 size="mini"
+
                 v-model="form.mesNormsNo"
                 placeholder="请输入MES规格代码"
-                @change="handelMesNormsNo"
+                @change="handelMesBoxNumberQrCode"
               ></el-input>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="MES客户简称">
-              <el-select  size="mini" v-model="form.mesCustomerShortName" @change="handelMesCustomerShortName" placeholder="请选择MES客户简称">
+              <el-select filterable  size="mini" v-model="form.mesCustomerShortName" @change="handelMesBoxNumberQrCode" placeholder="请选择MES客户简称">
                 <el-option
                 v-for="item in mesCustomerOptions"
                 :key="item.value"
@@ -44,13 +47,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="MES轮型">
-              <!-- <el-input
-                size="mini"
-                v-model="form.mesWheelTypeCode"
-                @change="handelMesWheelTypeCode"
-                placeholder="请输入MES轮型"
-              ></el-input> -->
-              <el-select  size="mini" v-model="form.mesWheelType" @change="handelMesWheelTypeCode" placeholder="请输入MES轮型">
+              <el-select  filterable  size="mini" v-model="form.mesWheelType" @change="handelMesBoxNumberQrCode" placeholder="请输入MES轮型">
                 <el-option
                 v-for="item in mesWheelType"
                 :key="item.value"
@@ -60,7 +57,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="MES托盘">
-              <el-select  size="mini" v-model="form.mesTray" @change="handelMesTray" placeholder="请输入MES托盘">
+              <el-select  size="mini" v-model="form.mesTray" @change="handelMesBoxNumberQrCode" placeholder="请输入MES托盘">
                 <el-option
                 v-for="item in mesTrayOptions"
                 :key="item.value"
@@ -70,7 +67,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="MES米长">
-              <el-select  size="mini" v-model="form.mesMeterLength" @change="handelMesMeterLength" placeholder="请输入MES米长">
+              <el-select  filterable  size="mini" v-model="form.mesMeterLength" @change="handelMesBoxNumberQrCode" placeholder="请输入MES米长">
                 <el-option
                 v-for="item in mesMeterLength"
                 :key="item.value"
@@ -104,16 +101,66 @@
                 size="mini"
                 v-model="form.mesNumOfRounds"
                 placeholder="请输入MES轮数(设定值)"
-                @change="handelMesNumOfRounds"
+                @change="handelMesBoxNumberQrCode"
               ></el-input>
             </el-form-item>
-            <el-form-item label="WMS客户简码">
+            <!-- <el-form-item label="WMS客户简码">
               <el-input
                 size="mini"
                 v-model="form.customerSimpleCode"
                 placeholder="请输入WMS客户简码"
-                @change="handelMesNumOfRounds"
+                @change="handelMesBoxNumberQrCode"
               ></el-input>
+            </el-form-item> -->
+            <el-form-item label="WMS任务类别">
+              <!-- <el-input
+                size="mini"
+                
+                v-model="form.wmsTaskType"
+                @change="handelMesBoxNumberQrCode"
+                placeholder="请输入WMS任务类别"
+              ></el-input> -->
+              <el-select   size="mini" v-model="form.wmsTaskType" @change="handelMesBoxNumberQrCode" placeholder="请选择WMS任务类别">
+                <el-option
+                v-for="item in taskTypeOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="AGV任务状态">
+              <el-select  filterable  size="mini" v-model="form.agvTaskStatus" @change="handelMesBoxNumberQrCode" placeholder="请选择任务状态">
+                <el-option
+                v-for="item in agvtaskstatusOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="WMS任务发布开始时间">
+              <el-date-picker
+                v-model="form.wmsTaskPublishTimeStart"
+                type="date"
+                size="mini"
+                value-format="timestamp"
+                placeholder="选择WMS任务发布开始时间"
+                clearable
+                @change="handelMesBoxNumberQrCode"
+                >
+              </el-date-picker>
+            </el-form-item>
+            <el-form-item label="WMS任务发布完成时间">
+              <el-date-picker
+                v-model="form.wmsTaskPublishTimeEnd"
+                type="date"
+                
+                size="mini"
+                value-format="timestamp"
+                @change="handelTaskPublishTimeEnd"
+                placeholder="选择WMS任务发布完成时间">
+              </el-date-picker>
             </el-form-item>
           </SearchFilter>
         </div>
@@ -250,6 +297,7 @@
     queryWarehouseColDropDown,
   } from "@/api/location";
   import PageNation from "@/components/Pagination";
+  import {AgvTaskStatusEnum,wmsTaskTypeEnum} from '@/api/index'
   import { queryGoodsList, exportBaseGoods,setHeight,deleteRole,editRemark } from "@/api/essential";
   import { uploadExcel } from "@/utils/uploadExcel";
   import SearchFilter from "@/components/SearchFilter";
@@ -261,7 +309,7 @@
       return {
         tableData: [],
         form: {
-            mesLeftRightSides:"",
+          mesLeftRightSides:"",
         },
         columns: [
           {
@@ -273,14 +321,14 @@
           },
           {
             label: "AGV任务状态",
-            attr: "agvTaskStatus",
+            attr: "agvTaskStatusName",
             width: "100",
             show: true,
             fixed: true,
           },
           {
             label: "WMS任务类别",
-            attr: "wmsTaskType",
+            attr: "wmsTaskTypeName",
             width: "100",
             show: true,
             fixed: true,
@@ -447,10 +495,14 @@
         loading: true,
         height:"",
         obj:'',
+        agvtaskstatusOptions:[],
+        taskTypeOptions:[],
       };
     },
     mounted() {
       this.queryGoodsList();
+      this.wmsTaskTypeEnumArr();
+      this.agvTaskStatusEnum();
       this.getProjectList()
       this.$store.dispatch('realList').then(()=>{
         this.mesWheelType=this.$store.state.obj.mes_wheel_type.map(v=>{return {key:v,value:v,}})
@@ -461,6 +513,7 @@
       })
     },
     computed: {
+    
       bindTableColumns() {
         return this.columns.filter((column) => column.show);
       },
@@ -480,6 +533,18 @@
       },
     },
     methods: {
+      async agvTaskStatusEnum(){
+        const res = await AgvTaskStatusEnum()
+        if(res.code=='0'){
+          this.agvtaskstatusOptions=res.data
+        }
+      },
+      async wmsTaskTypeEnumArr(){
+        const res = await wmsTaskTypeEnum()
+        if(res.code=='0'){
+          this.taskTypeOptions=res.data
+        }
+      },
         handelEdit(row){
             this.obj=row.remark
             row.flag=true
@@ -566,35 +631,28 @@
         this.queryGoodsList();
       },
       handelMesBoxNumberQrCode(val) {
-        this.form.mesBoxNumberQrCode = val;
-        this.queryGoodsList();
-      },
-      handelMesProductionNo(val) {
-        this.form.mesProductionNo = val;
-        this.queryGoodsList();
-      },
-      handelMesNormsNo(val) {
         if(val){
-          this.form.mesNormsName = val;
+          this.queryGoodsList();
+        }else{
+          this.form={
+            mesLeftRightSides:"",
+          }
+          this.queryGoodsList();
+        }
+        
+      },
+      handelTaskPublishTimeEnd(){
+        if(val){
+          this.queryGoodsList();
+        }else{
+          this.form={
+            mesLeftRightSides:"",
+          }
           this.queryGoodsList();
         }
       },
-      handelMesCustomerShortName(val) {
-        this.form.mesCustomerShortName = val;
-        this.queryGoodsList();
-      },
-      handelMesWheelTypeCode(val) {
-        this.form.mesWheelType = val;
-        this.queryGoodsList();
-      },
-      handelMesTray(val) {
-        this.form.mesTray = val;
-        this.queryGoodsList();
-      },
-      handelMesMeterLength(val) {
-        this.form.mesMeterLength = val;
-        this.queryGoodsList();
-      },
+
+ 
       handelMesLeftRightSides(val) {
         // this.form.mesLeftRightSides = val === "左" ? 0 : 1;
         this.queryGoodsList();
@@ -603,10 +661,7 @@
         // this.form.mesIsSolderJoint = val === "有" ? 1 : 0;
         this.queryGoodsList();
       },
-      handelMesNumOfRounds(val) {
-        this.form.mesNumOfRounds = val;
-        this.queryGoodsList();
-      },
+
       handelExport() {
         let params={
           titleNameList:[],

@@ -107,7 +107,11 @@
             <el-table-column prop="mesNetWeight" label="净重"></el-table-column>
             <el-table-column prop="mesNormShortName" label="规格简称"></el-table-column>
             <el-table-column prop="mesTray" label="托盘"></el-table-column>
-            <el-table-column prop="normType" label="规格类型"></el-table-column>
+            <el-table-column prop="normType" label="规格类型">
+              <template slot-scope="scope">
+                <span>{{ scope.row.normType==0?'半钢':'全钢' }}</span>
+              </template>
+            </el-table-column>
             </el-table>
         </div>
     </div>

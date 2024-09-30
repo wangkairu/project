@@ -4,7 +4,7 @@
       <div class="table-filter">
         <SearchFilter
           :labelWidth="'200px'"
-          :maxShow="3"
+          :maxShow="4"
           :collapsiable="false"
           @search="search"
           @reset="reset"
@@ -31,6 +31,15 @@
               v-model="customerSimpleCode"
               @change="handelCustomerSimpleCode"
               placeholder="请输入MES客户简码"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="MES箱号">
+            <el-input
+              size="mini"
+              v-model="mesBoxNo"
+              @change="handelMesBoxNo"
+              placeholder="请输入MES箱号"
+              clearable
             ></el-input>
           </el-form-item>
           <el-form-item label="MES箱号二维码">
@@ -774,6 +783,7 @@ export default {
         },
       ],
       warehouseCodeOptions:[],
+      mesBoxNo:"",
       sourceFrom:"",
       customerSimpleCode: "",
       mesBoxNumberQrCode: "",
@@ -879,6 +889,7 @@ export default {
         size: this.listQuery.pageSize,
       };
       const res = await queryGoodsList(params);
+      console.log(res,'res')
       if (res.code === "0") {
         this.tableData = Object.freeze(res.data.items);
         this.total = res.data.total;
@@ -905,7 +916,8 @@ export default {
     },
     reset() {
       this.form = {};
-      this.sourceFrom=""
+      this.mesBoxNo="";
+      this.sourceFrom="";
       this.customerSimpleCode = "";
       this.mesBoxNumberQrCode = "";
       this.mesBoxWeldingPointsNum = "";
@@ -938,6 +950,14 @@ export default {
     },
     handelMesBoxNumberQrCode(val) {
       this.form.mesBoxNumberQrCode = val;
+      this.queryGoodsList();
+    },
+    handelMesBoxNo(val){
+      if(val){
+        this.form.mesBoxNo = val;
+      }else{
+        this.form={}
+      }
       this.queryGoodsList();
     },
     handelMesBoxWeldingPointsNum(val) {

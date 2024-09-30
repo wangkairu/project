@@ -24,7 +24,7 @@
         <el-form-item label="分厂">
           <el-select
             clearable
-            v-model="deptCode"
+            v-model="form.deptCode"
             placeholder="请选择分厂"
             @change="handelDeptCode"
           >
@@ -41,14 +41,14 @@
           <el-select
             multiple
             filterable
-            v-model="mesNormsNameList"
+            v-model="form.mesNormsNameList"
             placeholder="请选择MES规格简称"
             @change="handelMesNormsNameList"
           >
             <el-option
               v-for="item in mesNormsNameListOptions"
               :key="item.value"
-              :label="item.label"
+              :label="item.value"
               :value="item.value"
             >
             </el-option>
@@ -58,12 +58,12 @@
           <el-select
             multiple
             filterable
-            v-model="mesCustomerShortNameList"
+            v-model="form.mesCustomerShortNameList"
             @change="handelMesCustomerShortNameList"
             placeholder="请选择MES客户简称"
           >
             <el-option
-              v-for="item in mesCustomerShortNameListOptions"
+              v-for="item in mesCustomerOptions"
               :key="item.value"
               :label="item.value"
               :value="item.value"
@@ -73,7 +73,7 @@
         </el-form-item>
         <el-form-item label="MES轮型">
           <el-select
-            v-model="mesWheelType"
+            v-model="form.mesWheelType"
             @change="handelMesWheelType"
             placeholder="请选择MES客户简称"
           >
@@ -88,8 +88,9 @@
         </el-form-item>
         <el-form-item label="MES托盘">
           <el-select
-            v-model="mesTray"
+            v-model="form.mesTray"
             @change="handelMesTray"
+            clearable
             placeholder="请选择MES托盘"
           >
             <el-option
@@ -103,7 +104,7 @@
         </el-form-item>
         <el-form-item label="MES米长">
           <el-select
-            v-model="mesMeterLength"
+            v-model="form.mesMeterLength"
             @change="handelMesMeterLength"
             placeholder="请选择MES米长"
           >
@@ -117,7 +118,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="MES轮数">
-          <el-select
+          <!-- <el-select
             v-model="mesNumOfRounds"
             placeholder="请选择MES轮数"
             @change="handelMesNumOfRounds"
@@ -129,12 +130,13 @@
               :value="item.value"
             >
             </el-option>
-          </el-select>
+          </el-select> -->
+          <el-input v-model="form.mesNumOfRounds" @change="handelMesNumOfRounds" size="mini" placeholder="请输入MES轮数"></el-input>
         </el-form-item>
         <el-form-item label="箱号">
           <el-input
             size="mini"
-            v-model="mesBoxNo"
+            v-model="form.mesBoxNo"
             placeholder="请输入箱号"
             @change="handelMesBoxNo"
             clearable
@@ -143,7 +145,7 @@
         <el-form-item label="MES生产编号">
           <el-input
             size="mini"
-            v-model="mesProductionNo"
+            v-model="form.mesProductionNo"
             placeholder="请输入MES生产编号"
             @change="handelMesProductionNo"
             clearable
@@ -152,7 +154,7 @@
         <el-form-item label="MES箱号二维码">
           <el-input
             size="mini"
-            v-model="mesBoxNumberQrCode"
+            v-model="form.mesBoxNumberQrCode"
             placeholder="请输入箱号二维码"
             @change="handelMesBoxNumberQrCode"
             clearable
@@ -162,7 +164,8 @@
           <div class="time">
             <el-date-picker
               size="mini"
-              v-model="mesPackingTimeStart"
+              value-format="timestamp"
+              v-model="form.mesPackingTimeStart"
               type="datetime"
               placeholder="开始时间"
               @change="handelMesPackingTimeStart"
@@ -174,7 +177,8 @@
           <div class="time">
             <el-date-picker
               size="mini"
-              v-model="mesPackingTimeEnd"
+              value-format="timestamp"
+              v-model="form.mesPackingTimeEnd"
               type="datetime"
               placeholder="结束时间"
               @change="handelMesPackingTimeEnd"
@@ -186,9 +190,10 @@
           <div class="time">
             <el-date-picker
               size="mini"
-              v-model="mesWarehousingTimeStart"
+              v-model="form.mesWarehousingTimeStart"
               type="datetime"
               placeholder="开始时间"
+              value-format="timestamp"
               @change="handelMesWarehousingTimeStart"
             >
             </el-date-picker>
@@ -198,9 +203,10 @@
           <div class="time">
             <el-date-picker
               size="mini"
-              v-model="mesWarehousingTimeEnd"
+              v-model="form.mesWarehousingTimeEnd"
               type="datetime"
               placeholder="结束时间"
+              value-format="timestamp"
               @change="handelMesWarehousingTimeEnd"
             >
             </el-date-picker>
@@ -209,28 +215,34 @@
         <el-form-item label="MES有无焊点">
           <el-radio-group
             size="mini"
-            v-model="mesIsSolderJoint"
+            v-model="form.mesIsSolderJoint"
             @change="handelMesIsSolderJoint"
           >
-            <el-radio label="有"></el-radio>
-            <el-radio label="无"></el-radio>
+            <el-radio :label="1">有</el-radio>
+            <el-radio :label="0">无</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="MES左右面">
           <el-radio-group
             size="mini"
-            v-model="mesLeftRightSides"
+            v-model="form.mesLeftRightSides"
             @change="handelMesLeftRightSides"
           >
-            <el-radio label="左"></el-radio>
-            <el-radio label="右"></el-radio>
+            <el-radio :label="0">左</el-radio>
+            <el-radio :label="1">右</el-radio>
           </el-radio-group>
         </el-form-item>
       </SearchFilter>
     </div>
     <div class="table">
+      <div>
+        <el-button type="primary" @click="hadelExcel" size="mini"
+          >导出Excel</el-button
+          >
+      </div>
       <el-table
         ref="table"
+        style="margin-top: 6px;"
         :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         :data="data"
       >
@@ -526,6 +538,7 @@
 </template>
 
 <script>
+import {uploadExcel} from '@/utils/uploadExcel'
 import * as echarts from "echarts";
 import SearchFilter from "@/components/SearchFilter";
 import PageNation from "@/components/Pagination";
@@ -538,6 +551,7 @@ import {
   getFilterConditions,
   getNetWeightBYMonth,
   getNormsRankBarByMonth,
+  exportDetail,
   getNormsRankBarByYear} from "@/api/storeIn";
 import { timeFormate } from '@/utils/timeFormate'
 import moment from "moment";
@@ -569,7 +583,7 @@ export default {
       mesWheelTypeOptions: [],
       mesTrayOptions: [],
       mesMeterLengthOptions: [],
-      mesNormsNameListOptions: [],
+      // mesNormsNameListOptions: [],
       mesNumOfRoundsOptions: [],
       deptCode: "",
       mesBoxNo: "",
@@ -608,11 +622,11 @@ export default {
         dateType:"day",
         date:new Date(new Date()-1000*60*60*24).toLocaleString().replace(/\//g,'-')
       },
-      mesWheelType:[],
+      // mesWheelTypeOptions:[],
       mesCustomerOptions:[],
       mesNormsNameListOptions:[],
       mesTrayOptions:[],
-      mesMeterLength:[],
+      // mesMeterLength:[],
     }
   },
   mounted() {
@@ -626,14 +640,27 @@ export default {
     this.dateTypeChangeSort()
     window.addEventListener('onResize', this.resizeHandel)
     this.$store.dispatch('realList').then(()=>{
-      this.mesWheelType=this.$store.state.obj.mes_wheel_type.map(v=>{return {key:v,value:v,}})
+      this.mesWheelTypeOptions=this.$store.state.obj.mes_wheel_type.map(v=>{return {key:v,value:v,}})
       this.mesCustomerOptions=this.$store.state.obj.customer_name.map(v=>{return {key:v,value:v,}})
       this.mesNormsNameListOptions=this.$store.state.obj.specification.map((v)=>{return { key:v,value:v,}})
       this.mesTrayOptions=this.$store.state.obj.mes_tray.map((v)=>{return { key:v,value:v,}})
-      this.mesMeterLength=this.$store.state.obj.mes_meter_length.map((v)=>{return { key:v,value:v,}})
+      this.mesMeterLengthOptions=this.$store.state.obj.mes_meter_length.map((v)=>{return { key:v,value:v,}})
     })
   },
   methods: {
+    async hadelExcel(){
+      const time = timeFormate(this.time)
+      const params={
+        type:0,
+        day:time.date,
+        month:time.month,
+        year:time.year,
+      }
+      const res = await exportDetail(params)
+      const blob = new Blob([res], { type: "application/vnd.ms-excel" });
+      const fileName = "成品入库（日）明细表.xlsx";
+      uploadExcel(fileName, blob);
+    },
     dateTypeChangeSort(){
       switch(this.sort.dateType){
         // case 'year':
@@ -1004,22 +1031,7 @@ export default {
     search() { this.queryList(); },
     reset() {
       this.day = '';
-      this.deptCode = "";
-      this.mesBoxNo = "";
-      this.mesBoxNumberQrCode = "";
-      this.mesCustomerShortNameList = [];
-      this.mesIsSolderJoint = '';
-      this.mesLeftRightSides = '';
-      this.mesMeterLength = '';
-      this.mesNormsNameList = [];
-      this.mesPackingTimeEnd = "";
-      this.mesPackingTimeStart = "";
-      this.mesProductionNo = "";
-      this.mesTray = "";
-      this.mesNumOfRounds = "";
-      this.mesWarehousingTimeEnd = "";
-      this.mesWarehousingTimeStart = "";
-      this.mesWheelType = "";
+      this.form={}
       this.month = '';
       this.year = ''
       this.queryList();
@@ -1139,51 +1151,15 @@ export default {
     },
     // 轮型选项
     async handelMesCustomerShortNameList(val) {
-      this.form.mesCustomerShortNameList = val
-      const time = timeFormate(this.time)
-      const params = {
-        day: time.date,
-        month: time.month,
-        year: time.year,
-        type: +this.type,
-        deptCode: this.deptCode,
-        mesNormsNameList: this.mesNormsNameList,
-        mesCustomerShortNameList: this.mesCustomerShortNameList
-      }
-      this.mesWheelTypeOptions = await this.handelDate(params)
+      this.queryList()
     },
     // 托盘选项
     async handelMesWheelType(val) {
-      this.form.mesWheelType = val
-      const time = timeFormate(this.time)
-      const params = {
-        day: time.date,
-        month: time.month,
-        year: time.year,
-        type: +this.type,
-        deptCode: this.deptCode,
-        mesNormsNameList: this.mesNormsNameList,
-        mesCustomerShortNameList: this.mesCustomerShortNameList,
-        mesWheelType: this.mesWheelType,
-      }
-      this.mesTrayOptions = await this.handelDate(params)
+      this.queryList()
     },
     // 米长选项 
     async handelMesTray(val) {
-      this.form.mesTray = val
-      const time = timeFormate(this.time)
-      const params = {
-        day: time.date,
-        month: time.month,
-        year: time.year,
-        type: +this.type,
-        deptCode: this.deptCode,
-        mesNormsNameList: this.mesNormsNameList,
-        mesCustomerShortNameList: this.mesCustomerShortNameList,
-        mesWheelType: this.mesWheelType,
-        mesTray: this.mesTray
-      }
-      this.mesMeterLengthOptions = await this.handelDate(params)
+      this.queryList()
     },
     // 轮数选项
     async handelMesMeterLength(val) {

@@ -92,62 +92,89 @@
         @pagination="pageChange"
       />
     </div>
-    <el-dialog @close="resetForm" title="绑定入库规则" :visible.sync="openAllocate" width="60%">
-    <el-form ref="form" :rules="rules" :model="obj" label-width="140px">
-      <el-form-item label="库房编号" prop="warehouseCode">
-        <el-select
-          clearable
-          v-model="obj.warehouseCode"
-          placeholder="请选择库房"
-          @change="warehouseCodeChanged"
-        >
-          <el-option
-            v-for="item in warehouseOptions"
-            :key="item.key"
-            :label="item.value"
-            :value="item.key"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="区域编号" prop="functionAreaCode">
-        <el-select
-          v-model="obj.functionAreaCode"
-          placeholder="请选择区域编号"
-          @change="functionAreaCodeChanged"
-        >
-          <el-option
-            v-for="item in functionAreaCodeOptions"
-            :key="item.key"
-            :label="item.value"
-            :value="item.key"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="库列编号" prop="colIndexAliasList">
-        <el-select
-          v-model="obj.colIndexAliasList"
-          placeholder="请选择库列编号"
-          @change="handelColIndexAliasList"
-        >
-          <el-option
-            v-for="item in colIndexAliasListOptions"
-            :key="item.value"
-            :label="item.value"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="选择库列">
-        <el-table :header-cell-style="{ background: '#eef1f6', color: '#606266' }" :data="allocateData"    @selection-change="handelSelect" style="width: 100%">
-            <el-table-column type="selection" width="65"></el-table-column>
-            <el-table-column  prop="mesNormsName" label="规格简称" width="180"></el-table-column>
-            <el-table-column prop="mesCustomerShortName" label="客户简称"  width="180"></el-table-column>
-            <el-table-column  prop="mesWheelType" label="轮型"> </el-table-column>
-            <el-table-column  prop="mesMeterLength" label="米长"> </el-table-column>
-            <el-table-column  prop="mesLeftRightSidesEnum" label="左右面"> </el-table-column>
-            <el-table-column  prop="mesSpecialRequirements" label="特殊要求"> </el-table-column>
-            <el-table-column  prop="boxCount" label="可调拨箱数"></el-table-column>
-            <el-table-column  prop="allocateLocation" label="调拨入库位置" width="280"> 
+    <el-dialog @close="resetForm" title="调拨入库" :visible.sync="openAllocate" width="50%">
+    <el-form ref="form" :rules="rules" :model="obj" label-width="90px" style="display: flex;flex-wrap: wrap;">
+      <div style="display: flex;flex-direction: column;">
+          <el-form-item label="库房编号" prop="warehouseCode">
+            <el-select
+              clearable
+              v-model="obj.warehouseCode"
+              placeholder="请选择库房"
+              @change="warehouseCodeChanged"
+            >
+              <el-option
+                v-for="item in warehouseOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="库列编号" prop="colIndexAliasList">
+          <el-select
+            v-model="obj.colIndexAliasList"
+            placeholder="请选择库列编号"
+            @change="handelColIndexAliasList"
+          >
+            <el-option
+              v-for="item in colIndexAliasListOptions"
+              :key="item.value"
+              :label="item.value"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="箱号二维码">
+          <el-input style="width: 200px;" v-model="value" clearable placeholder="请输入箱号二维码" @input="handelQrCode"></el-input>
+        </el-form-item>
+      </div>
+      <div style="display: flex;flex-direction: column;">
+        <el-form-item label="区域编号" prop="functionAreaCode">
+            <el-select
+              v-model="obj.functionAreaCode"
+              placeholder="请选择区域编号"
+              @change="functionAreaCodeChanged"
+            >
+              <el-option
+                v-for="item in functionAreaCodeOptions"
+                :key="item.key"
+                :label="item.value"
+                :value="item.key"
+              />
+            </el-select>
+          </el-form-item>
+     
+        <el-form-item label="库位编号" prop="locationCode" >
+          <el-select
+            v-model="obj.locationCode"
+            placeholder="请选择库位编号"
+            @change="handelStationCode"
+          >
+            <el-option
+              v-for="item in locationCodeOptions"
+              :key="item.stationCode"
+              :label="item.stationName"
+              :value="item.stationCode"
+            />
+          </el-select>
+        </el-form-item>
+      </div>
+     
+     <div style="margin-left: 10px;display: flex;flex-direction:column;width: 100%;">
+        <el-table :header-cell-style="{ background: '#eef1f6', color: '#606266' }" :data="allocateData" style="width:95%;margin-left: 12px;">
+            <!-- <el-table-column type="selection" width="65"></el-table-column> -->
+            <el-table-column  prop="specification_name" label="规格简称"></el-table-column>
+            <el-table-column prop="customer_name_short" label="客户简称"></el-table-column>
+            <el-table-column  prop="wheel" label="轮型"> </el-table-column>
+            <el-table-column  prop="length" label="米长"> </el-table-column>
+            <el-table-column  prop="mesLeftRightSides" label="左右面"> 
+              <template slot-scope="scope">
+                <span>{{ scope.row.mesLeftRightSides==1?'右':'左' }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column  prop="requirement" label="特殊要求"> </el-table-column>
+            <!-- <el-table-column  prop="boxCount" label="可调拨箱数"></el-table-column> -->
+            <!-- <el-table-column  prop="allocateLocation" label="调拨入库位置" width="280"> 
                 <template slot-scope="scope">
                   <el-select v-model="scope.row.allocateLocation" @change="handelStartTimeStr(scope.row)" clearable placeholder="请选择调拨入库位置">
                     <el-option
@@ -158,8 +185,8 @@
                     </el-option>
                   </el-select>
                 </template>
-            </el-table-column>
-            <el-table-column width="300" prop="startTimeStr" label="调拨入库开始时间"> 
+            </el-table-column> -->
+            <!-- <el-table-column width="300" prop="startTimeStr" label="调拨入库开始时间"> 
                 <template slot-scope="scope">
                     <el-date-picker 
                         @change="handelStartTimeStr(scope.row)"
@@ -170,16 +197,17 @@
                         placeholder="选择调拨入库开始时间">
                     </el-date-picker>
                 </template>
-            </el-table-column>
-            <el-table-column   label="调拨入库完成时间" width="180"> </el-table-column>
-            <el-table-column  prop="allocateUser" label="调拨入库制单人"> </el-table-column>
-            <el-table-column  prop="remark" label="备注" width="300">
+            </el-table-column> -->
+            <!-- <el-table-column   label="调拨入库完成时间" width="180"> </el-table-column> -->
+            <!-- <el-table-column  prop="allocateUser" label="调拨入库制单人"> </el-table-column> -->
+            <!-- @change="handelStartTimeStr(scope.row)" -->
+            <el-table-column  prop="remark" label="备注" width="200">
                 <template slot-scope="scope">
-                    <el-input class="inputCon" size="mini" v-model="scope.row.remark" @change="handelStartTimeStr(scope.row)" placeholder="请输入备注"></el-input>
+                    <el-input class="inputCon" size="mini" v-model="scope.row.remark"  placeholder="请输入备注"></el-input>
                 </template>
             </el-table-column>
         </el-table>
-      </el-form-item>
+     </div>
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button @click="resetForm">取 消</el-button>
@@ -194,7 +222,7 @@ import PageNation from "@/components/Pagination";
 import SearchFilter from "@/components/SearchFilter";
 import {queryAllocateInList,queryStationCode,createAllocate,} from '@/api/storeIn'
 import {selectCol,} from '@/api/storeOut'
-import {queryWarehouseColDropDown} from '@/api/location'
+import {queryWarehouseColDropDown,getGoodsByMes} from '@/api/location'
 export default {
   components:{
     PageNation,SearchFilter
@@ -202,6 +230,7 @@ export default {
   data(){
       return {
           openAllocate:false,
+          value:"",
           data:[],
           options:[],
           allocateData:[],
@@ -210,6 +239,10 @@ export default {
           },
           obj:{
             warehouseName:"",
+            locationCode:"",
+            colIndexAliasList:"",
+            functionAreaCode:"",
+            stationCode:"",
           },
           rules:{},
           warehouseOptions:[],
@@ -218,6 +251,7 @@ export default {
           colIndexAliasList:[],
           warehouseCodeOptions:[],
           functionAreaCodeOptions:[],
+          locationCodeOptions:[],
           warehouseName:"",
           total:0,
           listQuery: {
@@ -228,7 +262,7 @@ export default {
           num:[],
           dataList:[],
           user:"",
-          stationCode:"",
+          
       }
   },
   mounted(){
@@ -237,6 +271,24 @@ export default {
       this.warehouse()
   },
   methods:{
+    handelStationCode(val){
+      this.locationCodeOptions.forEach((v)=>{
+        if(v.stationCode==val){
+          this.obj.stationName=v.stationName
+        }
+      })
+    },
+      async handelQrCode(){
+        if(this.value){
+          const res = await getGoodsByMes(this.value)
+          if(res.code=='0'){
+            this.allocateData=[res.data]
+          }
+        }else{
+          this.allocateData=[]
+        }
+        
+      },
       handelStartTimeStr(row){
           if(this.dataList.length>0){
               const arr=this.dataList
@@ -269,14 +321,13 @@ export default {
         const params={
           areaCode:this.num[0],
           warehouseCode:this.obj.warehouseCode,
-          warehouseName:this.obj.warehouseName,
           functionType:'IN',
           functionCode:'IN',
-          colIndexAliasList:[this.obj.colIndexAliasList],
+          colIndexAliasList:this.obj.colIndexAliasList,
           functionAreaCode:this.obj.functionAreaCode,
         }
         const res = await queryStationCode(params)
-        this.options=res.data
+        this.locationCodeOptions=res.data
       },
       handelSelect(val){
         this.dataList = val.map((v)=>{
@@ -293,31 +344,41 @@ export default {
         this.warehouse()
       },
       resetForm(){
-        this.dataList=[]
+        // this.dataList=[]
         this.allocateData=[]
         this.obj={}
         this.openAllocate = false
       },
       async submitForm(){
-        if(this.dataList.length==0){
-          this.$message.error("请选择库列")
-        }else{
-          const params={
+        const params={
             areaCode:this.obj.functionAreaCode,
-            dataList:this.dataList,
             warehouseCode:this.obj.warehouseCode,
             warehouseName:this.obj.warehouseName,
+            dataList:[
+              {
+                colIndex:this.obj.colIndexAliasList,
+                locationCode:this.obj.locationCode,
+                mesBoxNumberQrCode:this.value,
+                mesCustomerShortName:this.allocateData[0].customer_name_short,
+                mesLeftRightSides:this.allocateData[0].mesLeftRightSides,
+                mesMeterLength:this.allocateData[0].length,
+                mesNormsName:this.allocateData[0].specification_name,
+                mesSpecialRequirements:this.allocateData[0].requirement,
+                mesWheelType:this.allocateData[0].wheel,
+                remark:this.allocateData[0].remark,
+                stationCode:this.obj.stationCode,
+              }
+            ],
           }
           const res = await createAllocate(params)
           if(res.code==='0'){
               this.$message.success(res.msg)
-              this.dataList=[]
+              // this.dataList=[]
               this.allocateData=[]
               this.obj={}
               this.openAllocate = false
               this.queryAllocateInList()
           }
-        }
       },
       async warehouse(){
           const res = await queryWarehouseColDropDown({})
@@ -329,6 +390,12 @@ export default {
       },
       // 获取第一层
       warehouseCodeChanged(value) {
+        this.obj.functionAreaCode=''
+        this.obj.colIndexAliasList=''
+        this.obj.locationCode=''
+        this.obj.stationName=''
+        this.value=''
+        this.allocateData=[]
           this.warehouseOptions.forEach((v)=>{
               if(v.key === value){
                 this.obj.warehouseName = v.value
@@ -357,6 +424,11 @@ export default {
           }
       },
       async functionAreaCodeChanged(){
+        this.obj.colIndexAliasList=''
+        this.obj.locationCode=''
+        this.obj.stationName=''
+        this.value=''
+        this.allocateData=[]
           const params={
               warehouseCode: this.obj.warehouseCode,
               warehouseName:this.obj.warehouseName,
@@ -376,6 +448,10 @@ export default {
           }
       },
       async handelColIndexAliasList(val){
+        this.obj.locationCode=''
+        this.obj.stationName=''
+        this.value=''
+        this.allocateData=[]
           if(val){
               this.colIndexAliasListOptions.forEach((v) => {
                   if (val.includes(v.value)) {
@@ -383,16 +459,7 @@ export default {
                   }
               });
           }
-          const params={
-              ...this.obj,
-              colIndexAliasList:[this.obj.colIndexAliasList],
-              areaCodeList:this.num
-          }
-          const res = await selectCol(params)
-          if(res.code === '0'){
-            this.allocateData = res.data
-            this.queryStationCode()
-          }
+          this.queryStationCode()
       },
       
       // handleSelectionChange(select){

@@ -14,8 +14,9 @@
                         size="mini"
                         v-model="form.date"
                         type="month"
+                        format="yyyy-MM"
+                        value-format="yyyy-MM"
                         placeholder="请选择月份"
-                        value-format="yyyy-MM-dd"
                         @change="handelSelect"
                         >
                         </el-date-picker>
@@ -186,7 +187,7 @@ export default {
     data(){
         return {
             form:{
-                date:`${new Date().getFullYear()}-${new Date().getMonth()}`
+                date:`${new Date().getFullYear()}-${new Date().getMonth() + 1}`
             },
             data:[],
             // optionsNormsName:[],
@@ -240,7 +241,7 @@ export default {
         },
         reset(){
             this.form={
-                date:`${new Date().getFullYear()}-${new Date().getMonth()}`
+                date:`${new Date().getFullYear()}-${new Date().getMonth() + 1}`
             }
             this.queryCheckPlanMonthList()
         },

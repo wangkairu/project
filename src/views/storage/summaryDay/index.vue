@@ -193,7 +193,7 @@ export default {
           wheelsType:"",
         },
         listQuery:{
-          pageNum:0,
+          pageNum:1,
           pageSize:10,
         },
         total:0,
@@ -259,7 +259,7 @@ export default {
               month:time[1],
               year:time[0],
               page:this.listQuery.pageNum ,
-              size:this.listQuery.pageSize,
+              pageSize:this.listQuery.pageSize,
               mesCustomer:this.query.mesCustomer+'',
               mesNormName:this.query.mesNormName+'',
           }

@@ -29,7 +29,7 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="客户简称">
-                    <el-select clearable filterable v-model="form.mesCustomer" @change="handelChange" placeholder="请选择客户简称">
+                    <el-select clearable filterable multiple v-model="form.mesCustomer" @change="handelChange" placeholder="请选择客户简称">
                         <el-option
                         v-for="item in mesCustomerOptions"
                         :key="item.value"
@@ -108,7 +108,11 @@
             <el-table-column prop="mesNetWeight" label="净重"></el-table-column>
             <el-table-column prop="mesNormShortName" label="规格简称"></el-table-column>
             <el-table-column prop="mesTray" label="托盘"></el-table-column>
-            <el-table-column prop="normType" label="规格类型"></el-table-column>
+            <el-table-column prop="normType" label="规格类型">
+              <template slot-scope="scope">
+                <span>{{ scope.row.normType==0?'半钢':'全钢' }}</span>
+              </template>
+            </el-table-column>
             </el-table>
         </div>
     </div>
@@ -126,7 +130,7 @@ export default {
             form:{
               date:`${new Date().getFullYear()}-${new Date().getMonth()+1}`,
               type:'0',
-              mesCustomer:"",
+              mesCustomer:'',
               mesLeftRightSides:"",
               mesNormName:"",
               mesTray:"",

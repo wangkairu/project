@@ -177,28 +177,29 @@
         width="70%"
         @close="openDetail = false">
         <el-table
-          :data="tableData"
+          :data="detailData"
           style="width: 100%"
           :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         >
           <el-table-column  type="index" label="序号" width="80"> </el-table-column>
+          <el-table-column prop="mesBoxNo" label="箱号"> </el-table-column>
           <el-table-column prop="mesBoxNumberQrCode" label="箱号二维码"> </el-table-column>
           <el-table-column prop="mesNormsName" label="规格简称" width="238"> </el-table-column>
           <el-table-column prop="mesCustomerShortName" label="客户简称"> </el-table-column>
           <el-table-column prop="mesWheelType" label="轮型"> </el-table-column>
           <el-table-column prop="mesMeterLength" label="米长"> </el-table-column>
           <el-table-column prop="mesLeftRightSidesEnum" label="左右面"> </el-table-column>
-          <el-table-column prop="mesSpecialRequirements" label="特殊要求"> </el-table-column>
+          <!-- <el-table-column prop="mesSpecialRequirements" label="特殊要求"> </el-table-column> -->
           <el-table-column prop="readyStartTime" label="备货订单时间"> </el-table-column>
           <el-table-column prop="readyFinishTime" label="备货完成时间"> </el-table-column>
           <!-- prop="documentInputBox1" -->
           <el-table-column  label="备货区编号"> </el-table-column>
           <!-- documentInputBox2 prop=""-->
-          <el-table-column  label="起点库位编号"> </el-table-column>
-          <el-table-column prop="planBoxCountLeft" label="终点库位编号"> </el-table-column>
-          <el-table-column prop="backStartTime" label="返库开始时间"> </el-table-column>
-          <el-table-column prop="backFinishTime" label="返库完成时间"> </el-table-column>
-          <el-table-column prop="createTime" label="创建时间"> </el-table-column>
+          <el-table-column prop="startCheck" label="起点库位编号"> </el-table-column>
+          <el-table-column prop="targetCheck" label="终点库位编号"> </el-table-column>
+          <el-table-column  label="返库开始时间"> </el-table-column>
+          <el-table-column  label="返库完成时间"> </el-table-column>
+          <el-table-column prop="wmsWarehousingTime" label="创建时间"> </el-table-column>
           <!-- <el-table-column prop="wmsDeliverTypeEnum" label="WMS发货类型"> </el-table-column> -->
           <!-- <el-table-column prop="statusEnum" label="返库原因" ></el-table-column> -->
           <el-table-column prop="remark" label="备注" ></el-table-column>
@@ -453,6 +454,7 @@
         const res = await queryTurnBackList(params);
         if (res.code === "0") {
           this.tableData = res.data.items;
+          console.log(this.tableData,'this.tableData')
           this.total = res.data.total;
         }
       },

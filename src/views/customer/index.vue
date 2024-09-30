@@ -245,13 +245,13 @@
           },
           {
             label: "客户总称",
-            attr: "customerLevel",
+            attr: "customerGlobalName",
             show: true,
             width:160,
           },
           {
             label: "客户信用等级",
-            attr: "customerGlobalName",
+            attr: "customerLevel",
             show: true,
             width:120,
           },

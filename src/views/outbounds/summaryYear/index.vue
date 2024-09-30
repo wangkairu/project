@@ -93,10 +93,18 @@
       </SearchFilter>
     </div>
     <div class="table">
+      <div>
+        <el-button type="primary" @click="hadelExcel" size="mini"
+          >导出Excel</el-button
+          >
+      </div>
       <el-table
         ref="table"
         :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         :data="data"
+        style="margin-top: 6px;"
+        :summary-method="getSummaries"
+        show-summary
       >
         <!-- <el-table-column fixed type="index" label="#"> </el-table-column> -->
         <el-table-column fixed prop="month" label="月份" >
@@ -173,6 +181,7 @@
 </template>
 
 <script>
+import {uploadExcel} from '@/utils/uploadExcel'
 import SearchFilter from "@/components/SearchFilter";
 import * as echarts from 'echarts';
 // import PageNation from "@/components/Pagination";
@@ -180,6 +189,7 @@ import {
   OutDetailWithYear,
   getCustomerAndSpecification,
   StatisticsReportsRatioYear,
+  exportOutDetailWithYear,
   StatisticsReportsWeightYear} from '@/api/storeOut'
 export default {
   name:"summaryMonth",
@@ -197,7 +207,7 @@ export default {
               wheelsType:"",
           },
           listQuery:{
-              pageNum:0,
+              pageNum:1,
               pageSize:10,
           },
           total:0,
@@ -224,6 +234,51 @@ export default {
       })
   },
   methods:{
+    async hadelExcel(){
+      
+      const res = await exportOutDetailWithYear(this.query.time)
+      const blob = new Blob([res], { type: "application/vnd.ms-excel" });
+      const fileName = "成品出库（年）汇总表.xlsx";
+      uploadExcel(fileName, blob);
+    },
+    getSummaries(param) {
+        const { columns, data } = param;
+        const sums = [];
+        columns.forEach((column, index) => {
+          if (index === 0) {
+            sums[index] = '年合计';
+            return;
+          }
+          let values=null
+          values = data.map(item => {
+            if(column.property=='reWorkWeight'){
+              return Number(item[column.property])
+            }else if(column.property=='reWorkRatio'){
+             return  Number(item[column.property]?item[column.property].split('%')[0]:item[column.property])
+            }else if(column.property=='mesInOutWeight'){
+              return Number(item[column.property])
+            }else if(column.property=='mesInOutRatio'){
+              return  Number(item[column.property].split('%')[0])
+            }
+          });
+         
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            // sums[index] += ' 元';
+          }else{
+            sums[index]=''
+          }
+        });
+
+        return sums;
+    },
     async StatisticsReportsWeightYear(){
         const params={
           flag:true,
@@ -381,7 +436,13 @@ export default {
           }
           const res = await OutDetailWithYear(params)
           if(res.code==='0'){
-              this.data=res.data
+              this.data=res.data.map((v)=>{
+                return {
+                  ...v,
+                  reWorkWeight:v.reWorkWeight==null?0:v.reWorkWeight,
+                  reWorkRatio:v.reWorkRatio==null?0:v.reWorkRatio
+                }
+              })
               // this.total = res.data.total
           }
       }
@@ -464,7 +525,7 @@ export default {
 ::v-deep .el-table {
 .el-table__fixed {
   height: auto !important;
-  bottom: 10px !important;
+  bottom: 0px !important;
 }
 .el-table__fixed::before {
   height: 0px;

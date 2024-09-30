@@ -153,14 +153,14 @@
         style="width: 100%; margin-top: 30px"
       >
         <el-table-column fixed type="index" label="#"> </el-table-column>
+        <el-table-column prop="mesNormsName" label="规格名称" width="80">
+        </el-table-column>
         <el-table-column prop="customerShortName" label="客户简称" width="120">
         </el-table-column>
-        <el-table-column prop="mesNormsName" label="MES规格名称" width="70">
+        <el-table-column prop="mesWheelType" label="轮型"> </el-table-column>
+        <el-table-column prop="mesMeterLength" label="米长">
         </el-table-column>
-        <el-table-column prop="mesWheelType" label="MES轮型"> </el-table-column>
-        <el-table-column prop="mesMeterLength" label="MES米长">
-        </el-table-column>
-        <el-table-column prop="mesLeftRightSides" label="MES左右面" width="70">
+        <el-table-column prop="mesLeftRightSidesEnum" label="左右面" width="70">
         </el-table-column>
         <el-table-column prop="mesTray" label="托盘"></el-table-column>
         <el-table-column prop="checkPlanCount" label="盘点箱数">
@@ -175,6 +175,8 @@
         <el-table-column prop="checkPlanLoss" label="盘亏数量">
         </el-table-column>
         <el-table-column prop="checkPlanProfit" label="盘盈数量">
+        </el-table-column>
+        <el-table-column prop="warehouseName" label="库房">
         </el-table-column>
         <el-table-column prop="functionAreaCode" label="区域编号">
         </el-table-column>

@@ -306,3 +306,50 @@ export function editUserPassword(params){
         data:params
     })
 }
+
+// 特殊规格
+
+// 
+export function queryListSpecial(params,query){
+    return request({
+        url:`/wms/special-config/queryList?page=${query.page}&size=${query.size}`,
+        method:"post",
+        data:params
+    })
+}
+
+// 新增编辑
+// 
+export function saveOrUpdateSpecial(params){
+    return request({
+        url:"/wms/special-config/saveOrUpdate",
+        method:"post",
+        data:params
+    })
+}
+
+// 
+export function specialDelete(params){
+    return request({
+        url:'/wms/special-config/delete',
+        method:"post",
+        data:params
+        // data:params
+    })
+}
+
+// 获取任务状态
+export function AgvTaskStatusEnum(){
+    return request({
+        url:"/wms/common/queryEnumList/AgvTaskStatusEnum",
+        method:"get",
+    })
+}
+
+// 获取任务类别
+export function wmsTaskTypeEnum(){
+    return request({
+        url:"/wms/common/queryEnumList/WmsTaskTypeEnum",
+        method:"get"
+    })
+}

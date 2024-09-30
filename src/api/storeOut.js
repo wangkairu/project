@@ -107,3 +107,22 @@ export function completeAllocate(id){
     })
 }
 
+// 导出 月
+
+export function OutDetailWithMonthExport(parmas){
+    return request({
+        url:`/wms/StatisticsReports/OutDetailWithMonthExport/${parmas.year}/${parmas.month}`,
+        method:"post",
+        responseType:"blob"
+    })
+}
+
+// 
+
+export function exportOutDetailWithYear(year){
+    return request({
+        url:`/wms/StatisticsReports/exportOutDetailWithYear/${year}`,
+        method:"get",
+        responseType:"blob"
+    })
+}

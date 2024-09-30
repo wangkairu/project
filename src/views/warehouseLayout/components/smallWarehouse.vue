@@ -181,6 +181,10 @@
               placeholder="请输入结束行"
             ></el-input>
           </el-form-item>
+          <el-form-item label="导出">
+            <el-button  size="mini" @click="handelExport(1)" type="primary"
+          >禁用库位导出</el-button>
+          </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
           <el-button @click="handelCancel('ruleForm')">取 消</el-button>
@@ -218,6 +222,10 @@
               v-model="ruleForm.endColIndex"
               placeholder="请输入结束列"
             ></el-input>
+          </el-form-item>
+          <el-form-item label="导出">
+          <el-button  size="mini" @click="handelExport(0)" type="primary"
+          >启用库位导出</el-button>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -386,12 +394,14 @@
     occupyResourceRelease,
     batchClearLocation,
     queryLocationHighlight,
+    enableLocationExport,
     queryWarehouseColDropDown } 
     from '@/api/location'
 import {setHeight} from '@/api/essential'
 import {queryNormsList} from '@/api/specification'
 import SearchFilter from "@/components/SearchFilter";
 import PageNation from "@/components/Pagination";
+import {uploadExcel} from '@/utils/uploadExcel'
   export default {
     name: "smallWarehouse",
     components:{
@@ -507,6 +517,17 @@ import PageNation from "@/components/Pagination";
       clearInterval(this.updateInterval);
     },
     methods: {
+      async handelExport(val){
+        const params={
+          ...this.ruleForm,
+          isEnable:val,
+          warehouseCode:"WAREHOUSE-D-EAST"
+        }
+        const res = await enableLocationExport(params)
+        const blob = new Blob([res], { type: "application/vnd.ms-excel" });
+        const fileName = "启用库位.xlsx";
+        uploadExcel(fileName, blob);
+      },  
       async handelConfirm(){
       if(this.layer.find('.purple').length!==0){
           this.layer.find('.purple').forEach((v)=>{

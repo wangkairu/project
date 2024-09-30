@@ -183,11 +183,11 @@ export function getGoodsLocation(params){
     })
 }
 // 
-export function selectClearReady(params,arr){
+export function selectClearReady(params){
     return request({
-        url:`/wms/basWarehouseVirtually/selectClearReady/${params.areaCode}`,
+        url:'/wms/basWarehouseVirtually/selectClearReady',
         method:"post",
-        data:arr,
+        data:params,
     })
 }
 // 
@@ -254,5 +254,33 @@ export function queryLocationHighlight(params){
         url:"/wms/basWarehouseVirtually/queryLocationHighlight",
         method:"post",
         data:params
+    })
+}
+
+// 获取库位编号
+export function queryStationCode(params){
+    return request({
+        url:`/wms/allocate-in/queryStationCode/${params.warehouseCode}/${params.areaCode}/${params.functionType}/${params.functionCode}/${params.functionAreaCode}/${params.colIndexAlias}`,
+        method:"get"
+    })
+}
+
+// 输入二维码
+// 
+export function getGoodsByMes(code){
+    return request({
+        url:`/wms/baseGoods/getGoodsByMes/${code}`,
+        method:"get"
+    })
+}
+
+// 启用库位导出
+
+export function enableLocationExport(paramas){
+    return request({
+        url:"/wms/basWarehouseVirtually/enableLocationExport",
+        method:"post",
+        data:paramas,
+        responseType:"blob"
     })
 }

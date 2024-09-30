@@ -33,7 +33,6 @@ export function importNorms(params){
         data:params
     })
 }
-// /wms/bas-norms/exportTemplate
 export function exportTemplate(){
     return request({
         url:"/wms/bas-norms/exportTemplate",

@@ -13,7 +13,7 @@
               <el-date-picker
                 size="mini"
                 v-model="query.time"
-                type="date"
+                type="month"
                 placeholder="请选择入库日期"
                 @change="handelTime"
                 format="yyyy-MM"
@@ -93,10 +93,18 @@
         </SearchFilter>
       </div>
     <div class="table">
+      <div >
+        <el-button type="primary" @click="hadelExcel" size="mini"
+          >导出Excel</el-button
+        >
+      </div>
       <el-table
         ref="table"
+        style="margin-top: 10px;"
         :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         :data="data"
+        :summary-method="getSummaries"
+        show-summary
       >
         <el-table-column fixed type="index" label="#"> </el-table-column>
         <!-- <el-table-column fixed prop="deptName" label="分厂" width="70"> -->
@@ -121,7 +129,7 @@
         </el-table-column>
         <el-table-column prop="ringRatio" label="入库净重环比">
         </el-table-column>
-        <el-table-column prop="mesNumOfRounds" label="返工净重">
+        <el-table-column prop="mesReWeight" label="返工净重">
         </el-table-column>
         <!-- <el-table-column
           prop="mesSpecialRequirements"
@@ -144,9 +152,10 @@
 </template>
 
 <script>
+import { uploadExcel } from "@/utils/uploadExcel";
 import SearchFilter from "@/components/SearchFilter";
 import PageNation from "@/components/Pagination";
-import {InDetailWithMonth,getCustomerAndSpecification} from '@/api/storeIn'
+import {InDetailWithMonth,getCustomerAndSpecification,InDetailWithMonthExportMonth} from '@/api/storeIn'
 import moment from 'moment'
 export default {
     name:"summaryMonth",
@@ -157,14 +166,14 @@ export default {
     data(){
         return {
             query:{
-                time:new Date(),
+                time:`${new Date().getFullYear()}-${new Date().getMonth() + 1}`,
                 mesCustomer:[],
                 mesNormName:[],
                 meterLength:"",
                 wheelsType:"",
             },
             listQuery:{
-                pageNum:0,
+                pageNum:1,
                 pageSize:10,
             },
             total:0,
@@ -187,6 +196,51 @@ export default {
         })
     },
     methods:{
+        async hadelExcel(){
+          const params={
+              year:this.query.time.split('-')[0],
+              month:this.query.time.split('-')[1]
+          }
+          const res = await InDetailWithMonthExportMonth(params)
+          const blob = new Blob([res], { type: "application/vnd.ms-excel" });
+          const fileName = "成品入库（月）汇总表.xlsx";
+          uploadExcel(fileName, blob);
+        },
+        getSummaries(param) {
+          const { columns, data } = param;
+          const sums = [];
+          columns.forEach((column, index) => {
+            if (index === 0) {
+              sums[index] = '总价';
+              return;
+            }
+           const values = data.map(item => {
+              if(column.property=='mesNetWeight'){
+                return Number(item[column.property])
+              }else if(column.property=='ringRatio'){
+              return  Number(item[column.property]?item[column.property].split('%')[0]:item[column.property])
+              }else if(column.property=='mesReWeight'){
+                return Number(item[column.property])
+              }
+            });
+            
+            if (!values.every(value => isNaN(value))) {
+              sums[index] = values.reduce((prev, curr) => {
+                const value = Number(curr);
+                if (!isNaN(value)) {
+                  return prev + curr;
+                } else {
+                  return prev;
+                }
+              }, 0);
+              // sums[index] += ' 元';
+            }else{
+              sums[index]=''
+            }
+          });
+
+          return sums;
+        },
         handelTime(){
             this.InDetailWithMonth()
         },
@@ -203,7 +257,7 @@ export default {
             this.InDetailWithMonth()
         },
         pageChange(val){
-            this.listQuery.pageNum = val.page ;
+            this.listQuery.pageNum = val.page;
             this.listQuery.pageSize = val.limit;
             this.InDetailWithMonth()
         },
@@ -221,13 +275,13 @@ export default {
             this.InDetailWithMonth()
         },
         async InDetailWithMonth(){
-            const time=moment(this.query.time).format('YYYY-MM-DD').split("-")
+            // const time=moment().format('YYYY-MM-DD').split("-")
             const params={
                 ...this.query,
-                month:time[1],
-                year:time[0],
+                month:this.query.time.split('-')[1],
+                year:this.query.time.split('-')[0],
                 page:this.listQuery.pageNum,
-                size:this.listQuery.pageSize,
+                pageSize:this.listQuery.pageSize,
                 mesCustomer:this.query.mesCustomer+'',
                 mesNormName:this.query.mesNormName+'',
                 wheelsType:this.query.wheelsType
@@ -316,8 +370,8 @@ export default {
 }
 ::v-deep .el-table {
   .el-table__fixed {
-    height: auto !important;
-    bottom: 10px !important;
+    // height: auto !important;
+    // bottom: 10px !important;
   }
   .el-table__fixed::before {
     height: 0px;

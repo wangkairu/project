@@ -11,20 +11,27 @@
                 <el-form-item label="年">
                     <el-date-picker
                     v-model="query.year"
-                    type="yyyy"
+                    type="year"
                     placeholder="选择日期"
                     @change="handelMesMeterLength"
+                    format="yyyy"
                     value-format="yyyy">
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="分厂">
-                    <el-input
-                        size="mini"
-                        v-model="query.mesBranchFactory"
-                        placeholder="请输入分厂"
-                        @change="handelMesMeterLength"
-                        clearable
-                    ></el-input>
+                    <el-select 
+                    filterable  
+                    @change="handelMesMeterLength"
+                    clearable 
+                    v-model="query.mesBranchFactory" 
+                    placeholder="请选择分厂">
+                        <el-option
+                        v-for="item in mesBranchFactoryOptions"
+                        :key="item.key"
+                        :label="item.value"
+                        :value="item.value">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="客户简称">
                     <el-select 
@@ -109,9 +116,10 @@
             <el-table
               :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
               :data="data"
-              height="600"
+
+              height="420"
             >
-                <el-table-column fixed type="index" label="#" width="55"> </el-table-column>
+                <el-table-column fixed prop="num" label="#" width="55"> </el-table-column>
                 <el-table-column
                 fixed
                 prop="mesNormShortName"
@@ -144,6 +152,12 @@ export default{
     data(){
         return {
             data:[],
+            mesBranchFactoryOptions:[
+                {
+                    value:"四期",
+                    key:"1",
+                }
+            ],
             query:{
                 mesBranchFactory: "",
                 mesCustomerName: [],
@@ -151,7 +165,7 @@ export default{
                 mesNormType: [],
                 mesTray: "",
                 mesWheelType: "",
-                year: "",
+                year: `${new Date().getFullYear()}`,
             },
             options:[],
             typeOptions:[],
@@ -183,7 +197,12 @@ export default{
             }
             const res = await IsExist(params)
             if(res.code=='0'){
-                this.data=res.data
+                this.data=res.data.map((v,index)=>{
+                    return {
+                        ...v,
+                        num:index+1==res.data.length?'月合计':index+1
+                    }
+                })
             }
         },
         search(){
@@ -197,7 +216,7 @@ export default{
                 mesNormType: [],
                 mesTray: "",
                 mesWheelType: "",
-                year: "",
+                year: `${new Date().getFullYear()}`,
             }
             this.IsExist()
         }

@@ -282,3 +282,33 @@ export function InOutDetailWeightByDay(params){
         params
     })
 }
+
+// 
+export function InDetailWithMonthExportMonth(params){
+    return request({
+        url:`/wms/StatisticsReports/InDetailWithMonthExport/${params.year}/${params.month}`,
+        method:"post",
+        responseType:"blob",
+    })
+}
+// 导出年汇总表
+// 
+
+export function exportInDetailWithYear(year){
+    return request({
+        url:`/wms/StatisticsReports/exportInDetailWithYear/${year}`,
+        method:'get',
+        responseType:'blob'
+    })
+}
+
+// 明细导出
+// 
+export function exportDetail(params){
+    return request({
+        url:"/wms/in-out-day/export",
+        method:"post",
+        data:params,
+        responseType:'blob'
+    })
+}

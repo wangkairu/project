@@ -2,24 +2,7 @@
     <div class="wrapper">
       <div class="record">
         <div class="clear" style="margin-right: 10px;">
-          <span>清除：</span>
-          <el-select style="margin-right: 10px;" size="mini" v-model="areaName"  placeholder="请选择区域">
-            <el-option
-              v-for="item in newArr"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-          <el-select style="margin-right: 10px;" size="mini" multiple v-model="stockingArea"  placeholder="请选择">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-          <el-button type="primary" size="mini" @click="selectClearReady">清除</el-button>
+          <el-button type="primary" size="mini" @click="stockFlag = true">备货区清空</el-button>
           <el-button type="primary" size="mini" @click="handelRuleList">绑定</el-button>
           <el-button type="primary" size="mini" @click="handelRuleListLook">查看</el-button>
         </div>
@@ -383,6 +366,50 @@
           <!-- <el-button type="primary" @click="handelConfirmRule">确 定</el-button> -->
         </span>
       </el-dialog>
+      <el-dialog
+        title="备货区清空"
+        :visible.sync="stockFlag"
+        width="35%">
+          <el-form 
+          :model="stockClearObj"
+          :rules="rules"
+          ref="ruleForm"
+          label-width="70px"
+          style="display: flex;flex-wrap: wrap;">
+          <el-form-item label="区域">
+            <el-select  size="mini" v-model="stockClearObj.areaName"  placeholder="请选择区域">
+              <el-option
+                v-for="item in newArr"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+            <el-form-item label="列">
+              <el-select size="mini"  multiple v-model="stockClearObj.stockingArea"  placeholder="请选择列">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="起始行">
+              <el-input  size="mini" v-model="stockClearObj.startRow" placeholder="请输入起始行" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="结束行">
+              <el-input  size="mini" v-model="stockClearObj.endRow" placeholder="请输入结束行" clearable></el-input>
+            </el-form-item>
+            
+          </el-form>
+
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="handelStockCancel">取 消</el-button>
+          <el-button type="primary" @click="selectClearReady">确 定</el-button>
+        </span>
+      </el-dialog>
     </div>
   </template>
   <script>
@@ -411,6 +438,13 @@
     },
     data() {
       return {
+        stockClearObj:{
+          areaName:"",
+          stockingArea:[],
+          startRow:1,
+          endRow:20,
+        },
+        stockFlag:false,
         ruleFlag:false,
         ruleLookFlag:false,
         wStage: null,
@@ -477,7 +511,7 @@
         newArr:[],
         value:"",
         stockingArea:[],
-        areaName:"",
+        // areaName:"",
         options:[
           {label:'1',value:1},
           {label:'2',value:2},
@@ -506,6 +540,15 @@
     //   clearInterval(this.updateInterval);
     // },
     methods: {
+      handelStockCancel(){
+        this.stockFlag = false
+        this.stockClearObj={
+          areaName:"",
+          stockingArea:[],
+          startRow:1,
+          endRow:20,
+        };
+      },
       handelSearch(){
         this.handelRuleListLook()
       },
@@ -646,17 +689,20 @@
         this.ruleFlag = true
       },
       async selectClearReady(){
-        if(!this.areaName){
+        if(!this.stockClearObj.areaName){
           this.$message.error("请先选择区域")
         }
         const params={
-          areaCode:this.areaName,
+          ...this.stockClearObj,
+          colArray:this.stockClearObj.stockingArea,
+          areaCode:this.stockClearObj.areaName,
         }
-        const res = await selectClearReady(params,this.stockingArea)
+        const res = await selectClearReady(params)
         if(res.code==='0'){
-          this.stockingArea=[]
+          this.stockFlag=false
+          this.stockClearObj.stockingArea=[]
           this.newArr=[]
-          this.areaName=''
+          this.stockClearObj.areaName=''
           this.$message.success(res.msg)
           this.basWarehouseVirtually()
         }else{
@@ -1284,5 +1330,12 @@
   }
   ::v-deep .el-dialog__body {
     padding: 1.275rem 1.25rem;
+  }
+  ::v-deep .el-input__inner{
+    height: 28px !important;
+    // width: 200px;
+  }
+  .multipleSelect{
+
   }
   </style>

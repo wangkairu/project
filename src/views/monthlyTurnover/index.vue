@@ -158,20 +158,16 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="remark" label="备注"></el-table-column>
-                <!-- <el-table-column label="操作" width="100">
+                <el-table-column label="操作" width="100">
                 <template slot-scope="scope">
-                    <el-button
-                    type="text"
-                    @click="handelUpdate(scope.$index, scope.row)"
-                    >编辑</el-button
-                    >
+          
                     <el-button
                     type="text"
                     @click="handelDelete(scope.$index, scope.row)"
                     >删除</el-button
                     >
                 </template>
-                </el-table-column> -->
+                </el-table-column>
             </el-table>
         </div>
         <div class="pagenation">
@@ -186,54 +182,59 @@
         <el-dialog
         title="新增"
         :visible.sync="addFlag"
-        width="30%"
+        width="40%"
         @close="handleClose('ruleForm')">
         <el-form :model="form" :rules="rules" ref="ruleForm" label-width="80px" class="demo-ruleForm">
-          <el-form-item label="规格简称" prop="mesNormShortName">
-            <el-input v-model="form.mesNormShortName" placeholder="请输入规格简称"></el-input>
-          </el-form-item>
-          <el-form-item label="客户简称" prop="mesCustomerShortName">
-            <el-input v-model="form.mesCustomerShortName" placeholder="请输入客户简称"></el-input>
-          </el-form-item>
-          <el-form-item label="客户简码" prop="mesCustomerSimpleCode">
-            <el-input v-model="form.mesCustomerSimpleCode" placeholder="请输入客户简码"></el-input>
-          </el-form-item>
-          <el-form-item label="轮型" prop="mesWheelType">
-            <el-input v-model="form.mesWheelType" placeholder="请输入轮型"></el-input>
-          </el-form-item>
-          <el-form-item label="托盘" prop="mesTray">
-            <el-input v-model="form.mesTray" placeholder="请输入托盘"></el-input>
-          </el-form-item>
-          <el-form-item label="米长" prop="mesMeterLength">
-            <el-input v-model="form.mesMeterLength" placeholder="请输入米长"></el-input>
-          </el-form-item>
-          <el-form-item label="订单时间" prop="date">
-            <el-date-picker
-              v-model="form.date"
-              type="month"
-              format="yyyy-MM"
-              value-format="yyyy-M"
-              placeholder="选择订单时间">
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="订单量" prop="count">
-            <el-input v-model.number="form.count" placeholder="请输入订单量"></el-input>
-          </el-form-item>
-          <el-form-item label="订单编号" prop="number">
-            <el-input v-model.number="form.number" placeholder="请输入订单编号"></el-input>
-          </el-form-item>
+          <div>
+              <el-form-item label="规格简称" prop="mesNormShortName">
+                <el-input v-model="form.mesNormShortName" placeholder="请输入规格简称"></el-input>
+              </el-form-item>
+              <el-form-item label="客户简称" prop="mesCustomerShortName">
+                <el-input v-model="form.mesCustomerShortName" placeholder="请输入客户简称"></el-input>
+              </el-form-item>
+              <el-form-item label="客户简码" prop="mesCustomerSimpleCode">
+                <el-input v-model="form.mesCustomerSimpleCode" placeholder="请输入客户简码"></el-input>
+              </el-form-item>
+              <el-form-item label="轮型" prop="mesWheelType">
+                <el-input v-model="form.mesWheelType" placeholder="请输入轮型"></el-input>
+              </el-form-item>
+              <el-form-item label="托盘" prop="mesTray">
+                <el-input v-model="form.mesTray" placeholder="请输入托盘"></el-input>
+              </el-form-item>
+          </div>
+          <div>
+              <el-form-item label="米长" prop="mesMeterLength">
+                <el-input v-model="form.mesMeterLength" placeholder="请输入米长"></el-input>
+              </el-form-item>
+              <el-form-item label="订单时间" prop="date">
+                <el-date-picker
+                  v-model="form.date"
+                  type="month"
+                  format="yyyy-MM"
+                  value-format="yyyy-M"
+                  placeholder="选择订单时间">
+                </el-date-picker>
+              </el-form-item>
+              <el-form-item label="订单量" prop="count">
+                <el-input v-model.number="form.count" placeholder="请输入订单量"></el-input>
+              </el-form-item>
+              <el-form-item label="订单编号" prop="number">
+                <el-input v-model.number="form.number" placeholder="请输入订单编号"></el-input>
+              </el-form-item>
+          </div>
           <el-form-item label="备注" prop="remark">
-            <el-input
-              type="textarea"
-              :rows="2"
-              placeholder="请输入备注"
-              v-model="form.remark">
-            </el-input>
-          </el-form-item>
+                <el-input
+                  style="width: 400px;"
+                  type="textarea"
+                  :rows="2"
+                  placeholder="请输入备注"
+                  v-model="form.remark">
+                </el-input>
+              </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="addFlag = false">取 消</el-button>
-          <el-button type="primary" @click="insertNumberOrder">确 定</el-button>
+          <el-button @click="cancelOrderNumber('ruleForm')">取 消</el-button>
+          <el-button type="primary" @click="insertNumberOrder('ruleForm')">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -243,7 +244,7 @@
 import {seletPage} from '@/api/index'
 import PageNation from "@/components/Pagination";
 import SearchFilter from '@/components/SearchFilter'
-import {insertNumberOrder,insertOneOrder} from '@/api/ordersInteractions'
+import {insertNumberOrder,insertOneOrder,DeleteNumber} from '@/api/ordersInteractions'
 export default {
     name:"monthlyTurnover",
     components: {PageNation,  SearchFilter },
@@ -251,7 +252,35 @@ export default {
         return {
             addFlag:false,
             data:[],
-            rules:{},
+            rules:{
+              mesNormShortName:[
+                { required: true, message: '请输入规格简称', trigger: 'blur' }
+              ],
+              mesCustomerShortName:[
+                { required: true, message: '请输入客户简称', trigger: 'blur' }
+              ],
+              mesCustomerSimpleCode:[
+                { required: true, message: '请输入客户简称', trigger: 'blur' }
+              ],
+              mesWheelType:[
+                { required: true, message: '请输入轮型', trigger: 'blur' }
+              ],
+              mesTray:[
+                { required: true, message: '请输入托盘', trigger: 'blur' }
+              ],
+              mesMeterLength:[
+                { required: true, message: '请输入米长', trigger: 'blur' }
+              ],
+              date:[
+                { required: true, message: '请选择订单时间', trigger: 'blur' }
+              ],
+              count:[
+                { required: true, message: '请输入订单量', trigger: 'blur' }
+              ],
+              number:[
+                { required: true, message: '请输入订单编号', trigger: 'blur' }
+              ],
+            },
             query:{
                 mesCustomerShortName: "",
                 mesCustomerSimpleShortCode: "",
@@ -259,7 +288,7 @@ export default {
                 mesTray: "",
                 mesWheelType: "",
                 meterLength: "",
-                month: `${new Date().getMonth()}`,
+                month: `${new Date().getMonth() + 1}`,
                 year: `${new Date().getFullYear()}`
             },
             form:{
@@ -300,25 +329,56 @@ export default {
         this.seletPage()
     },
     methods:{
+      async handelDelete(index,row){
+        this.$confirm("此操作将永久删除,是否继续?", "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(async ()=>{
+          const params={
+            id:row.id
+          }
+          const res = await  DeleteNumber(params)
+          if(res.code=='0'){
+            this.$message.success(res.msg)
+            this.seletPage()
+          }else{
+            this.$message.error(res.msg)            
+          }
+        })
+        
+      },
+      cancelOrderNumber(formName){
+        this.addFlag=false
+        this.$refs[formName].resetFields();
+      },
       handelEditCount(row){
         this.editCount=row
         row.taskCountFlag=true
       },
-      async handelSaveCount(){
-        const params={
-          ...this.editCount,
-          count:this.editCount.taskCount,
-          number:this.editCount.number.join(';'),
-          year:this.editCount.time.split("-")[0],
-          month:this.editCount.time.split("-")[1]
-        }
-        const res = await insertNumberOrder(params)
-        if(res.code==0){
-          this.$message.success(res.msg)
-          this.seletPage()
-        }else{
-          this.$message.error(res.msg)
-        }
+      async handelSaveCount(formName){
+        this.$refs[formName].validate(async (valid) => {
+          if (valid) {
+            const params={
+              ...this.editCount,
+              count:this.editCount.taskCount,
+              number:this.editCount.number.join(';'),
+              year:this.editCount.time.split("-")[0],
+              month:this.editCount.time.split("-")[1]
+            }
+            const res = await insertNumberOrder(params)
+            if(res.code==0){
+              this.$message.success(res.msg)
+              this.seletPage()
+            }else{
+              this.$message.error(res.msg)
+            }
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+       
       },
       handelCancelCount(row){
         row.taskCountFlag=false
@@ -392,8 +452,8 @@ export default {
                 mesTray: "",
                 mesWheelType: "",
                 meterLength: "",
-                month: 0,
-                year: 0
+                month: `${new Date().getMonth() + 1}`,
+                year: `${new Date().getFullYear()}`
             }
             this.seletPage()
         },
@@ -414,7 +474,6 @@ export default {
                     code:"",
                   }
                 })
-                console.log(this.data,'data')
                 this.total=res.data.total
             }
         }
@@ -505,5 +564,10 @@ ul {
   ::v-deep .el-input__suffix {
     right: 2.6125rem;
   }
+}
+.demo-ruleForm{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 </style>

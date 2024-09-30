@@ -2,24 +2,43 @@
     <div class="warpper">
         <div class="table-filter">
       <SearchFilter
-        :labelWidth="'150px'"
+        :labelWidth="'100px'"
         size="mini"
-        :maxShow="5"
+        :maxShow="6"
         @search="search"
         @reset="reset"
       >
-        <!-- <el-form-item label="入库日期">
-          <div class="time">
-            <el-date-picker
-              size="mini"
-              v-model="query.time"
-              type="date"
-              placeholder="请选择入库日期"
-              @change="handelTime"
+        <el-form-item label="分厂">
+          <el-select
+            clearable
+            v-model="query.shop"
+            @change="handelWheelsType"
+            placeholder="请选择分厂"
+          >
+            <el-option
+              v-for="item in shopOptions"
+              :key="item.value"
+              :label="item.value"
+              :value="item.value"
             >
-            </el-date-picker>
-          </div>
-        </el-form-item> -->
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="MES规格简称">
+          <el-select
+            v-model="query.mesNormName"
+            placeholder="请选择MES规格简称"
+            @change="handelMesNormName"
+          >
+            <el-option
+              v-for="item in mesNormsNameListOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="MES规格简称">
           <el-select
             multiple
@@ -88,6 +107,23 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item label="MES托盘">
+            <el-select
+              filterable
+              clearable
+              v-model="query.mesTray"
+              @change="handelWheelsType"
+              placeholder="请选择MES托盘"
+            >
+              <el-option
+                v-for="item in mesTrayOptions"
+                :key="item.value"
+                :label="item.value"
+                :value="item.key"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
       </SearchFilter>
     </div>
     <div class="table">
@@ -96,8 +132,9 @@
         :header-cell-style="{ background: '#eef1f6', color: '#606266' }"
         :data="data"
       >
-        <!-- <el-table-column fixed type="index" label="#"> </el-table-column> -->
+        
         <el-table-column fixed prop="year" label="年份"> </el-table-column>
+        <el-table-column fixed prop="shop" label="分厂"> </el-table-column>
         <el-table-column
           fixed
           prop="mesNormName"
@@ -159,7 +196,13 @@ export default{
               mesNormName:[],
               meterLength:"",
               wheelsType:"",
+              shop:"",
+              mesTray:"",
             },
+            shopOptions:[{
+              value:"四期",
+              key:"四期"
+            }],
             mesNormsNameListOptions:[],
             mesCustomerOptions:[],
             mesWheelType:[],
@@ -179,8 +222,22 @@ export default{
           this.mesWheelType=this.$store.state.obj.mes_wheel_type.map(v=>{return {key:v,value:v,}})
           this.mesCustomerOptions=this.$store.state.obj.customer_name.map(v=>{return {key:v,value:v,}})
           this.mesNormsNameListOptions=this.$store.state.obj.specification.map((v)=>{return { key:v,value:v,}})
-          this.mesTrayOptions=this.$store.state.obj.mes_tray.map((v)=>{return { key:v,value:v,}})
+
           this.mesMeterLength=this.$store.state.obj.mes_meter_length.map((v)=>{return { key:v,value:v,}})
+          this.mesTrayOptions=this.$store.state.obj.mes_tray.map((v)=>{
+            let label=''
+            if(v=='S'){
+              label='塑托'
+            }else if(v=='M'){
+              label='木托'
+            }else{
+              label='铁托'
+            }
+            return {
+              key:v,
+              value:label,
+            }
+          })
         })
     },
     methods:{
@@ -223,7 +280,13 @@ export default{
             }
             const res = await OutDetailWithYearly(params)
             if(res.code==='0'){
-              this.data=res.data
+              this.data=res.data.map((v)=>{
+                return {
+                  ...v,
+                  reWorkRatio:v.reWorkRatio==null?0:v.reWorkRatio,
+                  reWorkWeight:v.reWorkWeight==null?0:v.reWorkWeight,
+                }
+              })
               // this.total = res.data.total
           }
         }

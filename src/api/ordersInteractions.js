@@ -12,8 +12,8 @@ export function selectNumberOrder(params){
 export function insertNumberOrder(params){
     return request({
         url:"/wms/order/insertNumber",
-        method:"get",
-        params
+        method:"post",
+        data:params
     })
 }
 // 插入指定的订单量 
@@ -140,6 +140,16 @@ export function deleteSampleOrder(params){
 export function orderAndAnalaysis(params){
     return request({
         url:"/wms/order/orderAndAnalaysis",
+        method:"get",
+        params
+    })
+}
+
+// 删除月度订单流水记录表
+// 
+export function DeleteNumber(params){
+    return request({
+        url:"/wms/order/DeleteNumber",
         method:"get",
         params
     })

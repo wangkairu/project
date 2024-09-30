@@ -101,16 +101,21 @@
           </template>
         </el-table-column>
         <el-table-column fixed prop="warehouseName"  label="库房" width="60"> </el-table-column>
-        <!-- width="170" -->
+        <!-- width="170" used-->
         <el-table-column fixed prop="warehousingCol"  label="入库列" :width="flexColumnWidth('warehousingCol',this.data)" >
          <template slot-scope="scope">
           <span>{{ scope.row.warehousingCol?scope.row.warehousingCol:'暂无' }}</span>
          </template>
         </el-table-column>
+        <el-table-column fixed   label="容量"  >
+         <template slot-scope="scope">
+          <span>{{ scope.row.used }}/{{ scope.row.total }}</span>
+         </template>
+        </el-table-column>
         <el-table-column fixed prop="mesNormsName" label="规格">
         </el-table-column>
         <el-table-column
-        fixed
+          fixed
           prop="mesCustomerShortName"
           label="客户简称"
           :show-overflow-tooltip="true"

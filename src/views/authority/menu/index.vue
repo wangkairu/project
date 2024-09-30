@@ -465,7 +465,7 @@ export default {
       }
     },
     async remove(node, data) {
-      this.$confirm("确定要取消吗？", "提示", {
+      this.$confirm("确定要取消吗？", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
