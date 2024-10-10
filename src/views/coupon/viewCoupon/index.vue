@@ -135,6 +135,7 @@ export default {
             }
             const res = await createDeliverGoods(params)
             if(res.data.code === '0'){
+                
                 this.$router.push('/coupon')
                 this.left=[]
                 this.query.areaCode=''
